@@ -1,0 +1,48 @@
+{
+  "org": {
+    "name": "Riverside Civic Association",
+    "timezone": "America/Chicago",
+    "locale": "en-US",
+    "productName": "Booth Ops",
+    "contactName": "Alex Rivera",
+    "contactPhone": "555-0100",
+    "contactEmail": "ops@example.org"
+  },
+  "event": {
+    "name": "Riverside Arts Weekend",
+    "boothName": "Information Booth",
+    "location": "River Park Pavilion",
+    "hoursLabel": "10:00 am – 7:00 pm",
+    "openDate": "2026-08-14",
+    "closeDate": "2026-08-16",
+    "setupStartDate": "",
+    "setupEndDate": ""
+  },
+  "lifecycle": {
+    "captainToolsOpenDate": "2026-06-01",
+    "liveStart": { "relativeTo": "eveOfOpen", "localTime": "21:00" },
+    "liveEnd": { "relativeTo": "closeDate", "localTime": "21:00" }
+  },
+  "shifts": {
+    "templates": [
+      { "num": 1, "start": "10:00", "end": "13:00" },
+      { "num": 2, "start": "13:00", "end": "16:00" },
+      { "num": 3, "start": "16:00", "end": "19:00" }
+    ],
+    "officialSlotsPerShift": 3
+  },
+  "captains": {
+    "defaultMode": "fullDay",
+    "splitDays": [],
+    "split": {
+      "am": { "label": "Morning", "shiftNums": [1], "timeRange": "10 am – 1 pm" },
+      "pm": { "label": "Afternoon", "shiftNums": [2, 3], "timeRange": "1 pm – 7 pm" }
+    }
+  },
+  "labels": {
+    "admin": "Admin",
+    "captain": "Day captain",
+    "volunteer": "Volunteer",
+    "viewer": "Viewer"
+  }
+}

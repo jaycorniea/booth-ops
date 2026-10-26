@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+@media print {
+  header, nav, .no-print { display: none !important; }
+  body { background: white; }
+}
+
+/* Inventory table: hide spinners so 3-digit targets aren’t clipped */
+.inv-num-input::-webkit-outer-spin-button,
+.inv-num-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.inv-num-input {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Extra volunteer columns — hidden until the captain expands the sheet. */
+.extra-sheet.extras-closed .extra-col {
+  display: none;
+}

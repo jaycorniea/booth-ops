@@ -1,0 +1,295 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
+import { type AuthRole } from "./auth-types";
+import { PORTAL_WINDOW_SIM_COOKIE } from "./portal-window-sim";
+import { endVisitorSession, startVisitorSession } from "./visitor-session";
+
+export type { AuthRole } from "./auth-types";
+export { ROLE_LABELS } from "./auth-types";
+
+const COOKIE_NAME = "booth_portal_auth";
+export const ADMIN_SHELL_COOKIE = "booth_portal_admin_shell";
+const LEGACY_CAPTAIN_DATE_COOKIE = "booth_portal_captain_date";
+
+export const AUTH_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24;
+export const ON_CALL_SIGNUP_GATE_COOKIE = "on_call_signup_gate";
+export const SHIFT_SIGNUP_GATE_COOKIE = "shift_signup_gate";
+export const VOLUNTEER_SIGNUP_GATE_COOKIE = "volunteer_signup_gate";
+
+const REQUIRED_PRODUCTION_PASSWORDS = [
+  "ADMIN_PASSWORD",
+  "DAY_CAPTAIN_PASSWORD",
+  "VOLUNTEER_PORTAL_PASSWORD",
+  "ON_CALL_SIGNUP_PASSWORD",
+  "VOLUNTEER_SIGNUP_PASSWORD",
+] as const;
+
+function envPassword(keys: string[]): string {
+  for (const key of keys) {
+    const val = process.env[key]?.trim();
+    if (val) return val;
+  }
+  return "";
+}
+
+export function assertAuthEnv(): void {
+  if (process.env.NODE_ENV !== "production") return;
+  if (process.env.NEXT_PHASE === "phase-production-build") return;
+  const missing = REQUIRED_PRODUCTION_PASSWORDS.filter((key) => !process.env[key]?.trim());
+  if (missing.length) {
+    throw new Error(
+      `Booth Ops refuses to start in production without passwords: ${missing.join(", ")}`
+    );
+  }
+}
+
+export function getDayCaptainPassword(): string {
+  return envPassword(["DAY_CAPTAIN_PASSWORD", "PORTAL_PASSWORD"]);
+}
+
+export const getPortalPassword = getDayCaptainPassword;
+
+export function getAdminPassword(): string {
+  return envPassword(["ADMIN_PASSWORD", "PORTAL_ADMIN_PASSWORD"]);
+}
+
+export function getReadOnlyPassword(): string {
+  return envPassword(["READ_ONLY_PASSWORD", "PORTAL_READ_ONLY_PASSWORD"]);
+}
+
+export function getVolunteerPortalPassword(): string {
+  return envPassword(["VOLUNTEER_PORTAL_PASSWORD", "VOLUNTEER_PASSWORD"]);
+}
+
+export function getOnCallSignupPassword(): string {
+  return envPassword(["ON_CALL_SIGNUP_PASSWORD", "PORTAL_ON_CALL_SIGNUP_PASSWORD"]);
+}
+
+export function getVolunteerSignupPassword(): string {
+  return envPassword([
+    "VOLUNTEER_SIGNUP_PASSWORD",
+    "SHIFT_SIGNUP_PASSWORD",
+    "PORTAL_SHIFT_SIGNUP_PASSWORD",
+  ]);
+}
+
+export function getShiftSignupPassword(): string {
+  return getVolunteerSignupPassword();
+}
+
+export function verifyOnCallSignupPassword(input: string): boolean {
+  const expected = getOnCallSignupPassword();
+  return Boolean(expected) && input.trim() === expected;
+}
+
+export function verifyVolunteerSignupPassword(input: string): boolean {
+  const expected = getVolunteerSignupPassword();
+  return Boolean(expected) && input.trim() === expected;
+}
+
+export function verifyOnCallSignupOrPortalPassword(input: string): boolean {
+  if (verifyOnCallSignupPassword(input)) return true;
+  const role = verifyPassword(input.trim());
+  return role === "admin" || role === "captain";
+}
+
+export function verifyVolunteerSignupOrPortalPassword(input: string): boolean {
+  if (verifyVolunteerSignupPassword(input)) return true;
+  const role = verifyPassword(input.trim());
+  return role === "admin" || role === "captain";
+}
+
+export function verifyShiftSignupPassword(input: string): boolean {
+  return verifyVolunteerSignupPassword(input);
+}
+
+export async function hasOnCallSignupAccess(): Promise<boolean> {
+  const jar = await cookies();
+  return jar.get(ON_CALL_SIGNUP_GATE_COOKIE)?.value === "1";
+}
+
+export async function hasVolunteerSignupAccess(): Promise<boolean> {
+  if (await canWrite()) return true;
+  const jar = await cookies();
+  return jar.get(VOLUNTEER_SIGNUP_GATE_COOKIE)?.value === "1";
+}
+
+export async function hasShiftSignupAccess(): Promise<boolean> {
+  return (
+    (await hasVolunteerSignupAccess()) ||
+    (await cookies()).get(SHIFT_SIGNUP_GATE_COOKIE)?.value === "1"
+  );
+}
+
+export async function setOnCallSignupAccess(): Promise<void> {
+  const jar = await cookies();
+  jar.set(ON_CALL_SIGNUP_GATE_COOKIE, "1", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24,
+    path: "/join-on-call",
+  });
+}
+
+export async function setVolunteerSignupAccess(): Promise<void> {
+  const jar = await cookies();
+  jar.set(VOLUNTEER_SIGNUP_GATE_COOKIE, "1", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24,
+    path: "/join-shift",
+  });
+}
+
+export async function setShiftSignupAccess(): Promise<void> {
+  await setVolunteerSignupAccess();
+}
+
+export async function getAuthRole(): Promise<AuthRole | null> {
+  const jar = await cookies();
+  const value = jar.get(COOKIE_NAME)?.value;
+  if (value === "admin" || value === "captain" || value === "viewer" || value === "volunteer") {
+    return value;
+  }
+  if (value === "authenticated") return "captain";
+  return null;
+}
+
+export async function isViewer(): Promise<boolean> {
+  return (await getAuthRole()) === "viewer";
+}
+
+export async function isAuthenticated(): Promise<boolean> {
+  return (await getAuthRole()) !== null;
+}
+
+export async function isAdmin(): Promise<boolean> {
+  return (await getAuthRole()) === "admin";
+}
+
+export async function canWrite(): Promise<boolean> {
+  const role = await getAuthRole();
+  return role === "admin" || role === "captain";
+}
+
+export async function canContact(): Promise<boolean> {
+  return canSeeContact();
+}
+
+export async function canSeeContact(): Promise<boolean> {
+  const role = await getAuthRole();
+  return role === "admin" || role === "captain";
+}
+
+export async function canWriteDayLog(): Promise<boolean> {
+  const role = await getAuthRole();
+  return role === "admin" || role === "captain" || role === "volunteer";
+}
+
+export async function requireWriteAccess(): Promise<void> {
+  if (!(await canWrite())) {
+    redirect("/?error=readonly");
+  }
+}
+
+export async function requireDayLogAccess(): Promise<void> {
+  if (!(await canWriteDayLog())) {
+    redirect("/volunteer?error=readonly");
+  }
+}
+
+export async function requireAdmin(): Promise<void> {
+  if (!(await isAdmin())) {
+    redirect("/?error=admin_required");
+  }
+}
+
+export async function requireCaptainAccess(): Promise<void> {
+  const role = await getAuthRole();
+  if (role !== "admin" && role !== "captain") {
+    redirect("/?error=access_required");
+  }
+}
+
+export async function requireWriteAccessApi(): Promise<NextResponse | null> {
+  if (!(await canWrite())) {
+    return NextResponse.json({ error: "Read-only access" }, { status: 403 });
+  }
+  return null;
+}
+
+export async function requireAdminApi(): Promise<NextResponse | null> {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+  }
+  return null;
+}
+
+export async function hasAdminShell(): Promise<boolean> {
+  const jar = await cookies();
+  return jar.get(ADMIN_SHELL_COOKIE)?.value === "1";
+}
+
+export async function setAdminShell(): Promise<void> {
+  const jar = await cookies();
+  jar.set(ADMIN_SHELL_COOKIE, "1", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: AUTH_SESSION_MAX_AGE_SECONDS,
+    path: "/",
+  });
+}
+
+export async function setAuthenticated(role: AuthRole): Promise<void> {
+  const jar = await cookies();
+  jar.set(COOKIE_NAME, role, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: AUTH_SESSION_MAX_AGE_SECONDS,
+    path: "/",
+  });
+}
+
+export async function clearAuthentication(): Promise<void> {
+  await endVisitorSession();
+  const jar = await cookies();
+  jar.delete(COOKIE_NAME);
+  jar.delete(ADMIN_SHELL_COOKIE);
+  jar.delete(LEGACY_CAPTAIN_DATE_COOKIE);
+  jar.delete(PORTAL_WINDOW_SIM_COOKIE);
+}
+
+export async function commitAuthenticatedLogin(role: AuthRole): Promise<void> {
+  if (role === "admin") {
+    await setAdminShell();
+  }
+  await setAuthenticated(role);
+}
+
+export async function beginAuthenticatedSession(role: AuthRole): Promise<void> {
+  await startVisitorSession(undefined, { authRole: role });
+  await commitAuthenticatedLogin(role);
+}
+
+export function verifyPassword(input: string): AuthRole | null {
+  const password = input.trim();
+  if (!password) return null;
+  const admin = getAdminPassword();
+  const captain = getDayCaptainPassword();
+  const volunteer = getVolunteerPortalPassword();
+  const readOnly = getReadOnlyPassword();
+  if (admin && password === admin) return "admin";
+  if (captain && password === captain) return "captain";
+  if (volunteer && password === volunteer) return "volunteer";
+  if (readOnly && password === readOnly) return "viewer";
+  return null;
+}
+
+export function homePathForRole(role: AuthRole): string {
+  return role === "volunteer" || role === "viewer" ? "/volunteer" : "/";
+}
