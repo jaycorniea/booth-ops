@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0
+
+- Remove the admin Reports item and the reports page
+- Event settings, alerts, the portal log, and captain IPs stay on the Admin menu
+
 ## 0.3.0
 
 - Remove captain feedback and the issue log

@@ -4,7 +4,6 @@ const STATIC_PATH_LABELS: Record<string, string> = {
   "/": "Home",
   "/schedule": "Schedule",
   "/volunteers": "Volunteer profiles",
-  "/reports": "Reports",
   "/access": "Access",
   "/guidance/volunteer": "Booth guidance",
   "/orientation/volunteer-guidance": "Booth guidance",

@@ -22,7 +22,7 @@ function authRoleFromCookieHeader(cookieHeader: string | null): AuthRole | null 
  * Each browser gets an anonymous session id (cookie booth_portal_sid). Events are
  * stored in portal_events for event-week ops review and post-event export.
  *
- * Recommended metrics to watch (Reports → Portal activity):
+ * Recommended metrics to watch (Admin → Portal log):
  * - activeSessions / sessionsToday — concurrent captain devices
  * - loginsToday — password shares / session churn
  * - mutationsToday by action — roster edits, tally saves, EOD submits
