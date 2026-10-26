@@ -130,6 +130,21 @@ export async function ensurePortalDeviceSchema(): Promise<void> {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )
   `);
+  await sqlRun(`
+    CREATE TABLE IF NOT EXISTS captain_ip_mappings (
+      client_ip TEXT NOT NULL,
+      event_date TEXT NOT NULL,
+      captain_slot TEXT NOT NULL DEFAULT 'full',
+      source TEXT NOT NULL DEFAULT 'inferred',
+      visit_count INTEGER NOT NULL DEFAULT 0,
+      last_seen_at TEXT,
+      last_session_id TEXT,
+      notes TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (client_ip, event_date)
+    )
+  `);
   try {
     await sqlRun("ALTER TABLE captain_ip_mappings ADD COLUMN device_id TEXT");
   } catch {
