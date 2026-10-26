@@ -1,8 +1,6 @@
-import { BrowserGeoCapture } from "@/components/BrowserGeoCapture";
 import { AdminRoleSwitcher } from "@/components/AdminRoleSwitcher";
 import { LocalDbDevBanner } from "@/components/LocalDbDevBanner";
 import { Nav } from "@/components/Nav";
-import { NavTracker } from "@/components/NavTracker";
 import { PortalContactFooter } from "@/components/PortalContactFooter";
 import { getAuthRole, hasAdminShell, isAdmin } from "@/lib/auth";
 import { getCaptainMoreMenuItems, getViewerExtrasMenuItems } from "@/lib/captain-nav";
@@ -25,8 +23,6 @@ export async function PortalChrome({ children }: { children: React.ReactNode }) 
 
   return (
     <>
-      <NavTracker />
-      <BrowserGeoCapture />
       <LocalDbDevBanner />
       <Nav
         role={role}

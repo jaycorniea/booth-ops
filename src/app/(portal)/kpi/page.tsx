@@ -1,9 +1,7 @@
-import { AdminLogNav } from "@/components/AdminLogNav";
 import { StoplightThresholdLegend } from "@/components/StoplightLegend";
 import { DuringEventOperationsSection } from "@/components/DuringEventOperationsSection";
 import { CoverageCard, ShiftSlotsHistoryChart, StatTile } from "@/components/KpiWidgets";
 import { Card } from "@/components/ui";
-import { isAdmin } from "@/lib/auth";
 import { formatEventDate, getEventClose, getEventOpen } from "@/lib/event-dates";
 import { getDataHygieneKpis } from "@/lib/data-hygiene";
 import { getDuringEventKpis, getPreEventKpis } from "@/lib/kpi";
@@ -12,8 +10,7 @@ import Link from "next/link";
 
 export default async function KpiPage() {
   const today = centralDateString();
-  const [admin, preEvent, duringEvent, hygiene] = await Promise.all([
-    isAdmin(),
+  const [preEvent, duringEvent, hygiene] = await Promise.all([
     getPreEventKpis(today),
     getDuringEventKpis(today),
     getDataHygieneKpis(),
@@ -34,8 +31,6 @@ export default async function KpiPage() {
           Readiness and operations metrics · {formatEventDate(today)} ({phaseLabel})
         </p>
       </div>
-
-      {admin && <AdminLogNav active="/kpi" />}
 
       <section className="space-y-4">
         <div>

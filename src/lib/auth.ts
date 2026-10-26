@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import { type AuthRole } from "./auth-types";
 import { PORTAL_WINDOW_SIM_COOKIE } from "./portal-window-sim";
-import { endVisitorSession, startVisitorSession } from "./visitor-session";
 
 export type { AuthRole } from "./auth-types";
 export { ROLE_LABELS } from "./auth-types";
@@ -165,7 +164,6 @@ export async function setAuthenticated(role: AuthRole): Promise<void> {
 }
 
 export async function clearAuthentication(): Promise<void> {
-  await endVisitorSession();
   const jar = await cookies();
   jar.delete(COOKIE_NAME);
   jar.delete(ADMIN_SHELL_COOKIE);
@@ -178,11 +176,6 @@ export async function commitAuthenticatedLogin(role: AuthRole): Promise<void> {
     await setAdminShell();
   }
   await setAuthenticated(role);
-}
-
-export async function beginAuthenticatedSession(role: AuthRole): Promise<void> {
-  await startVisitorSession(undefined, { authRole: role });
-  await commitAuthenticatedLogin(role);
 }
 
 export function verifyPassword(input: string): AuthRole | null {

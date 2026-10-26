@@ -1,7 +1,6 @@
 import { getAuthRole, type AuthRole } from "./auth";
 import type { FieldChange } from "./audit-format";
 import { sqlAll, sqlRun } from "./db-client";
-import { getVisitorSessionId } from "./visitor-session";
 
 export type { FieldChange } from "./audit-format";
 export { formatFieldChange, parseAuditChanges } from "./audit-format";
@@ -120,7 +119,7 @@ export async function recordAudit(params: {
     if (params.operation === "update" && Object.keys(changes).length === 0) return;
 
     const actorRole = params.actorRole ?? (await getAuthRole()) ?? "captain";
-    const sessionId = params.sessionId ?? (await getVisitorSessionId());
+    const sessionId = params.sessionId ?? null;
 
     const summary =
       params.summary ??
@@ -141,24 +140,6 @@ export async function recordAudit(params: {
         params.eventDate ?? null,
       ]
     );
-
-    try {
-      const { shouldInferCaptainIp, recordCaptainIpInference } = await import("./captain-ip-mappings");
-      if (shouldInferCaptainIp(actorRole, params.eventDate)) {
-        const { getClientIp } = await import("./client-ip");
-        const clientIp = await getClientIp();
-        if (clientIp) {
-          await recordCaptainIpInference({
-            clientIp,
-            eventDate: params.eventDate!,
-            sessionId,
-            authRole: actorRole,
-          });
-        }
-      }
-    } catch (inferErr) {
-      console.error("[audit-log] ip-inference", params.entityType, inferErr);
-    }
   } catch (err) {
     console.error("[audit-log]", params.entityType, params.operation, err);
   }

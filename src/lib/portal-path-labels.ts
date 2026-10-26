@@ -8,8 +8,6 @@ const STATIC_PATH_LABELS: Record<string, string> = {
   "/guidance/volunteer": "Booth guidance",
   "/orientation/volunteer-guidance": "Booth guidance",
   "/kpi": "KPIs",
-  "/portal-log": "Portal log",
-  "/captain-ips": "Captain IPs",
   "/event-settings": "Event settings",
   "/login": "Login",
   "/volunteer": "Volunteer hub",

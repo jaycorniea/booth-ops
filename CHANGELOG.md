@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0
+
+- Remove the portal log, Captain IPs, and the session, geo, and IP tracking that fed them
+- Event settings stays on the Admin menu. Day sheet audit history still feeds fill KPIs
+
 ## 0.5.0
 
 - Remove the alerts page, the Admin menu item, and the stored alert sync

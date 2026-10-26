@@ -20,8 +20,6 @@ const ACCESS_LINKS = [{ href: "/access", label: "Access" }] as const;
 
 const ADMIN_MENU_ITEMS = [
   { href: "/event-settings", label: "Event settings" },
-  { href: "/portal-log", label: "Portal Log" },
-  { href: "/captain-ips", label: "Captain IPs" },
 ] as const;
 
 function ChevronIcon({ className, open }: { className?: string; open?: boolean }) {

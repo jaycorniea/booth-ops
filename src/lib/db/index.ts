@@ -515,30 +515,16 @@ export async function setChecklistItem(eventDate: string, key: string, checked: 
 export async function exportAllData() {
   await dbReady();
   const { listAuditLog } = await import("../audit-log");
-  const { listPortalEventsForExport, listPortalSessionsForExport } = await import(
-    "../portal-analytics"
-  );
-  const [
-    shifts,
-    assignments,
-    dayCaptains,
-    portalSessions,
-    portalEvents,
-    auditLog,
-  ] = await Promise.all([
+  const [shifts, assignments, dayCaptains, auditLog] = await Promise.all([
     sqlAll("SELECT * FROM shifts ORDER BY event_date, shift_num"),
     sqlAll("SELECT * FROM shift_assignments ORDER BY shift_id, slot_index"),
     sqlAll("SELECT * FROM day_captains ORDER BY event_date, captain_slot"),
-    listPortalSessionsForExport(),
-    listPortalEventsForExport(),
     listAuditLog(10_000),
   ]);
   return {
     shifts,
     assignments,
     dayCaptains,
-    portalSessions,
-    portalEvents,
     auditLog,
     exportedAt: new Date().toISOString(),
   };

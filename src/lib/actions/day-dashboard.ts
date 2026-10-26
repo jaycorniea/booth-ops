@@ -15,7 +15,6 @@ import { requireWriteAccess } from "../auth";
 import { asAuditRecord, recordAudit } from "../audit-log";
 import { refreshShiftSlotsKpiSnapshot } from "../kpi-snapshots";
 import type { CaptainSlot } from "../day-captain-slots";
-import { logPortalEvent } from "../instrumentation";
 import { notifyPortalDataChanged } from "../data-changed";
 import { parseDayCaptainFormData } from "../day-captain-form";
 import { formatPhoneDisplay } from "../phone-format";
@@ -66,16 +65,6 @@ async function persistShiftUpdate(
     before: asAuditRecord(before),
     after: after ? asAuditRecord(after) : null,
     eventDate,
-  });
-  await logPortalEvent({
-    eventType: "mutation",
-    action: "shift.update",
-    eventDate,
-    detail: {
-      shiftId: id,
-      checkedIn: patch.checked_in === 1,
-      noShow: patch.no_show === 1,
-    },
   });
   revalidateDayDashboard(eventDate);
   revalidatePath("/schedule");

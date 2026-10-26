@@ -14,7 +14,7 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 
 const PUBLIC = ["/login", "/api/health"];
-const ADMIN_ONLY = ["/portal-log", "/captain-ips", "/event-settings"];
+const ADMIN_ONLY = ["/event-settings"];
 const WRITE_API: string[] = [];
 const VOLUNTEER_ALLOWED_PREFIXES = [
   "/volunteer",
@@ -23,7 +23,6 @@ const VOLUNTEER_ALLOWED_PREFIXES = [
   "/day",
   "/api/logout",
 ];
-const SESSION_ID_COOKIE = "booth_portal_sid";
 const AUTH_COOKIE = "booth_portal_auth";
 
 function portalAsOfFromRequest(request: NextRequest): Date {
@@ -96,15 +95,6 @@ export function proxy(request: NextRequest) {
   }
 
   const response = NextResponse.next();
-  if (!request.cookies.get(SESSION_ID_COOKIE)?.value) {
-    response.cookies.set(SESSION_ID_COOKIE, crypto.randomUUID(), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 90,
-      path: "/",
-    });
-  }
   if (role === "captain") {
     const pickedKey = captainPickedDayKeyFromPath(pathname);
     if (pickedKey) {

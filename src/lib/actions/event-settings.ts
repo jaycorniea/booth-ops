@@ -3,9 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "../auth";
-import { getEventSettings, saveEventSettings } from "../db";
+import { saveEventSettings } from "../db";
 import { parseEventSettingsInput } from "../event-settings";
-import { logPortalEvent } from "../instrumentation";
 
 export async function saveEventSettingsAction(formData: FormData): Promise<void> {
   await requireAdmin();
@@ -29,18 +28,7 @@ export async function saveEventSettingsAction(formData: FormData): Promise<void>
     redirect("/event-settings?error=invalid");
   }
 
-  const before = await getEventSettings();
   await saveEventSettings(parsed.settings);
-  await logPortalEvent({
-    eventType: "mutation",
-    action: "event_settings.save",
-    detail: {
-      year: parsed.settings.year,
-      openDate: parsed.settings.openDate,
-      closeDate: parsed.settings.closeDate,
-      previousYear: before.year,
-    },
-  });
   revalidatePath("/", "layout");
   revalidatePath("/event-settings");
   revalidatePath("/schedule");
