@@ -34,10 +34,6 @@ export function getCaptainSlotsForDate(eventDate: string): CaptainSlotConfig[] {
   ];
 }
 
-export function totalCaptainSlots(eventDates: string[]): number {
-  return eventDates.reduce((sum, date) => sum + getCaptainSlotsForDate(date).length, 0);
-}
-
 export function hasAllDayCaptainsAssigned(
   eventDate: string,
   captains: { captain_slot: CaptainSlot; name?: string | null }[]
@@ -47,22 +43,4 @@ export function hasAllDayCaptainsAssigned(
     const row = captains.find((c) => c.captain_slot === cfg.slot);
     return Boolean(row?.name?.trim());
   });
-}
-
-export function formatCaptainSlotSummary(
-  eventDate: string,
-  captains: { captain_slot: CaptainSlot; name?: string | null }[]
-): string {
-  const slots = getCaptainSlotsForDate(eventDate);
-  if (!isSplitCaptainDay(eventDate)) {
-    const captain = captains.find((c) => c.captain_slot === "full");
-    return captain?.name?.trim() ?? "";
-  }
-  return slots
-    .map((cfg) => {
-      const captain = captains.find((c) => c.captain_slot === cfg.slot);
-      const name = captain?.name?.trim();
-      return name ? `${name} (${cfg.timeRange})` : `${cfg.timeRange}: open`;
-    })
-    .join(" · ");
 }

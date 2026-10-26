@@ -1,6 +1,5 @@
 import { ChecklistToggle } from "@/components/ChecklistToggle";
 import { DayCaptainSections } from "@/components/DayCaptainSections";
-import { PrintButton } from "@/components/PrintButton";
 import { ShiftSlotsFillBar } from "@/components/ShiftSlotsFillBar";
 import { DayShiftVolunteerTable } from "@/components/DayShiftVolunteerTable";
 import { Card } from "@/components/ui";
@@ -120,10 +119,8 @@ export function DayDashboardContent({
         <ShiftSlotsFillBar
           filled={daySlotFill.filled}
           total={daySlotFill.total}
-          extraCount={0}
           scope={fillScope}
         />
-        <PrintButton />
       </div>
     </div>
   );
@@ -156,10 +153,6 @@ export function DayDashboardContent({
           <p className="text-sm text-slate-600">
             <Link href={`/day-log?date=${date}`} className="font-medium text-blue-700 underline">
               Day log (clicker)
-            </Link>
-            {" · "}
-            <Link href={`/day/${date}/eod`} className="font-medium text-blue-700 underline">
-              Day Captain report
             </Link>
           </p>
         ) : null}
@@ -204,10 +197,6 @@ export function DayDashboardContent({
           <Link href={`/day-log?date=${date}`} className="font-medium text-blue-700 underline">
             Day log (clicker)
           </Link>
-          {" · "}
-          <Link href={`/day/${date}/eod`} className="font-medium text-blue-700 underline">
-            Day Captain report
-          </Link>
         </p>
       ) : null}
 
@@ -231,14 +220,6 @@ export function DayDashboardContent({
             <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-700">
               <li>
                 <span className="font-medium text-slate-800">PI:</span> coordinator contact
-              </li>
-              <li>
-                <Link href="/resources" className="font-medium text-blue-700 underline">
-                  Resources
-                </Link>
-              </li>
-              <li>
-                <span className="font-medium text-slate-800">Security:</span> TBD
               </li>
             </ul>
           </div>

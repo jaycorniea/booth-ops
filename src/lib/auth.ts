@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { NextResponse } from "next/server";
 import { type AuthRole } from "./auth-types";
 import { PORTAL_WINDOW_SIM_COOKIE } from "./portal-window-sim";
 
@@ -42,8 +41,6 @@ export function getDayCaptainPassword(): string {
   return envPassword(["DAY_CAPTAIN_PASSWORD", "PORTAL_PASSWORD"]);
 }
 
-export const getPortalPassword = getDayCaptainPassword;
-
 export function getAdminPassword(): string {
   return envPassword(["ADMIN_PASSWORD", "PORTAL_ADMIN_PASSWORD"]);
 }
@@ -64,14 +61,6 @@ export async function getAuthRole(): Promise<AuthRole | null> {
   }
   if (value === "authenticated") return "captain";
   return null;
-}
-
-export async function isViewer(): Promise<boolean> {
-  return (await getAuthRole()) === "viewer";
-}
-
-export async function isAuthenticated(): Promise<boolean> {
-  return (await getAuthRole()) !== null;
 }
 
 export async function isAdmin(): Promise<boolean> {
@@ -103,12 +92,6 @@ export async function requireWriteAccess(): Promise<void> {
   }
 }
 
-export async function requireDayLogAccess(): Promise<void> {
-  if (!(await canWriteDayLog())) {
-    redirect("/volunteer?error=readonly");
-  }
-}
-
 export async function requireAdmin(): Promise<void> {
   if (!(await isAdmin())) {
     redirect("/?error=admin_required");
@@ -120,20 +103,6 @@ export async function requireCaptainAccess(): Promise<void> {
   if (role !== "admin" && role !== "captain") {
     redirect("/?error=access_required");
   }
-}
-
-export async function requireWriteAccessApi(): Promise<NextResponse | null> {
-  if (!(await canWrite())) {
-    return NextResponse.json({ error: "Read-only access" }, { status: 403 });
-  }
-  return null;
-}
-
-export async function requireAdminApi(): Promise<NextResponse | null> {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: "Admin access required" }, { status: 403 });
-  }
-  return null;
 }
 
 export async function hasAdminShell(): Promise<boolean> {

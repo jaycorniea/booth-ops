@@ -6,7 +6,6 @@ import {
   isAdmin,
   requireCaptainAccess,
 } from "@/lib/auth";
-import Link from "next/link";
 import { portalBaseUrl } from "@/lib/portal-url";
 
 const BASE_URL = portalBaseUrl();
@@ -62,23 +61,6 @@ export default async function AccessPage() {
               note="Event organizers. Full portal."
             />
           ) : null}
-        </div>
-      </Card>
-
-      <Card title="Public orientation (no password)">
-        <div className="flex flex-wrap gap-2 text-sm">
-          <Link href="/orientation/shift-volunteer" className="text-blue-700 underline">
-            Shift orientation
-          </Link>
-          <Link href="/orientation/volunteer-guidance" className="text-blue-700 underline">
-            Booth guidance
-          </Link>
-          <Link href="/orientation/day-captain" className="text-blue-700 underline">
-            Day Captain orientation
-          </Link>
-          <Link href="/map" className="text-blue-700 underline">
-            Venue map
-          </Link>
         </div>
       </Card>
     </div>

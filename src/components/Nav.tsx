@@ -8,12 +8,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-import {
-  getOpsNavLinks,
-  getUnusedMenuItems,
-  getOrientationMenu,
-  type OrientationMenuGroup,
-} from "@/lib/ops-nav";
+import { getOpsNavLinks } from "@/lib/ops-nav";
 import { getCaptainNavLinks, type CaptainNavMenuItem } from "@/lib/captain-nav";
 
 const ACCESS_LINKS = [{ href: "/access", label: "Access" }] as const;
@@ -169,138 +164,12 @@ function NavDropdownMenu({
   );
 }
 
-function groupContainsPath(group: OrientationMenuGroup, pathname: string): boolean {
-  return group.items.some((item) => navMenuItemActive(pathname, item.href));
-}
-
-function OrientationNestedMenu({
-  label,
-  pathname,
-  groups,
-  onNavigate,
-}: {
-  label: string;
-  pathname: string;
-  groups: readonly OrientationMenuGroup[];
-  onNavigate?: () => void;
-}) {
-  const { open, setOpen, rootRef } = useNavDropdown();
-  const [expanded, setExpanded] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const match = groups.find((group) => groupContainsPath(group, pathname));
-    setExpanded(match?.heading ?? null);
-  }, [open, groups, pathname]);
-
-  return (
-    <div ref={rootRef} className="relative">
-      <NavDropdownTrigger label={label} open={open} onClick={() => setOpen((v) => !v)} />
-      {open && (
-        <div
-          role="menu"
-          className="z-50 bg-white py-1 md:absolute md:left-0 md:top-full md:mt-1 md:min-w-[16rem] md:rounded-lg md:border md:border-slate-200 md:shadow-lg"
-        >
-          {groups.map((group) => {
-            const isOpen = expanded === group.heading;
-            const panelId = `orientation-sub-${group.heading.replace(/\s+/g, "-").toLowerCase()}`;
-            return (
-              <div key={group.heading}>
-                <button
-                  type="button"
-                  role="menuitem"
-                  aria-expanded={isOpen}
-                  aria-controls={panelId}
-                  onClick={() => setExpanded(isOpen ? null : group.heading)}
-                  className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  {group.heading}
-                  <ChevronIcon className="h-4 w-4 shrink-0" open={isOpen} />
-                </button>
-                {isOpen ? (
-                  <div id={panelId} role="group" className="pb-1">
-                    {group.items.map((item) => (
-                      <NavMenuLink
-                        key={`${item.href}:${item.label}`}
-                        item={item}
-                        pathname={pathname}
-                        inset
-                        onClick={() => {
-                          setOpen(false);
-                          onNavigate?.();
-                        }}
-                      />
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function AdminMenu({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
   return (
     <NavDropdownMenu
       label="Admin"
       pathname={pathname}
       items={ADMIN_MENU_ITEMS}
-      onNavigate={onNavigate}
-    />
-  );
-}
-
-function UnusedMenu({
-  pathname,
-  label,
-  role,
-  onNavigate,
-}: {
-  pathname: string;
-  label: string;
-  role: AuthRole;
-  onNavigate?: () => void;
-}) {
-  return (
-    <NavDropdownMenu
-      label={label}
-      pathname={pathname}
-      items={getUnusedMenuItems(role)}
-      onNavigate={onNavigate}
-    />
-  );
-}
-
-function OrientationMenu({
-  pathname,
-  label,
-  role,
-  onNavigate,
-}: {
-  pathname: string;
-  label: string;
-  role: AuthRole;
-  onNavigate?: () => void;
-}) {
-  const menu = getOrientationMenu(role);
-  if ((menu as { variant: string }).variant === "groups") {
-    return (
-      <OrientationNestedMenu
-        label={label}
-        pathname={pathname}
-        groups={menu.groups}
-        onNavigate={onNavigate}
-      />
-    );
-  }
-  return (
-    <NavDropdownMenu
-      label={label}
-      pathname={pathname}
-      items={menu.items}
       onNavigate={onNavigate}
     />
   );
@@ -480,13 +349,7 @@ export function Nav({
             className={`${menuOpen ? "mt-1 flex" : "hidden"} flex-col gap-1 md:mt-0 md:flex md:flex-row md:flex-wrap md:items-center`}
           >
             {links.map((entry) => {
-              if ("kind" in entry && entry.kind === "unused-menu") {
-                return null;
-              }
-              if ("kind" in entry && entry.kind === "orientation-menu") {
-                return null;
-              }
-              if ("kind" in entry && entry.kind === "captain-more-menu") {
+              if ("kind" in entry) {
                 return (
                   <CaptainMoreMenu
                     key="captain-more-menu"
@@ -497,7 +360,7 @@ export function Nav({
                   />
                 );
               }
-              const link = entry as { href: string; label: string; home?: boolean };
+              const link = entry;
               const active =
                 role === "captain"
                   ? isCaptainNavActive(link.href, link.label)

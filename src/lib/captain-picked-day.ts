@@ -17,19 +17,6 @@ export function encodeCaptainPickedDayKey(date: string, captainSlot?: CaptainSlo
   return captainSlot ? `${date}:${captainSlot}` : date;
 }
 
-export function parseCaptainPickedDayKey(
-  key: string | undefined | null
-): { date: string; captainSlot?: CaptainSlot } | null {
-  if (!key?.trim()) return null;
-  const trimmed = key.trim();
-  const colon = trimmed.indexOf(":");
-  if (colon === -1) return { date: trimmed };
-  const date = trimmed.slice(0, colon);
-  const slot = trimmed.slice(colon + 1);
-  if (slot === "am" || slot === "pm") return { date, captainSlot: slot };
-  return { date: trimmed };
-}
-
 /** Dashboard paths only — not eod. */
 export function captainPickedDayKeyFromPath(pathname: string): string | null {
   const match = pathname.match(/^\/day\/(\d{4}-\d{2}-\d{2})(?:\/([^/]+))?\/?$/);

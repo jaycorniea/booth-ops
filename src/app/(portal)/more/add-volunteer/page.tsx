@@ -146,10 +146,6 @@ export default async function CaptainAddVolunteerHowToPage() {
         <Link href="/more" className="font-medium text-blue-700 underline">
           ← Captain&apos;s Extras
         </Link>
-        {" · "}
-        <Link href="/orientation/day-captain" className="font-medium text-blue-700 underline">
-          Day Captain Orientation
-        </Link>
       </p>
     </div>
   );

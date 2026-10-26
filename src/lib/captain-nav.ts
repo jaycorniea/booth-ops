@@ -1,38 +1,13 @@
-import type {
-  OpsNavLink,
-  OpsNavCaptainMoreMenu,
-  OpsNavUnusedMenu,
-  OpsNavOrientationMenu,
-} from "@/lib/ops-nav";
-import { dayDashboardHref } from "@/lib/day-routes";
-import { parseCaptainPickedDayKey } from "@/lib/captain-picked-day";
+import type { OpsNavCaptainMoreMenu, OpsNavLink } from "@/lib/ops-nav";
 
 export const CAPTAIN_MORE_NAV_LABEL = "More";
-export const CAPTAIN_EXTRAS_NAV_LABEL = CAPTAIN_MORE_NAV_LABEL;
 
 export type CaptainNavMenuItem = {
   href: string;
   label: string;
 };
 
-export type CaptainNavEntry =
-  | OpsNavLink
-  | OpsNavCaptainMoreMenu
-  | OpsNavUnusedMenu
-  | OpsNavOrientationMenu;
-
-export const CAPTAIN_PICK_DAY_HREF = "/#event-days";
-export const CAPTAIN_PICK_DAY_HASH = "event-days";
-
-export function resolveCaptainShiftSheetHref(pickedKey?: string | null): string {
-  const parsed = parseCaptainPickedDayKey(pickedKey);
-  if (!parsed) return CAPTAIN_PICK_DAY_HREF;
-  return dayDashboardHref(parsed.date, parsed.captainSlot);
-}
-
-export function isCaptainShiftSheetDayHref(href: string): boolean {
-  return href.startsWith("/day/");
-}
+export type CaptainNavEntry = OpsNavLink | OpsNavCaptainMoreMenu;
 
 export function getCaptainMoreMenuItems(): CaptainNavMenuItem[] {
   return [
@@ -40,14 +15,6 @@ export function getCaptainMoreMenuItems(): CaptainNavMenuItem[] {
     { href: "/more/add-volunteer", label: "Add a volunteer" },
     { href: "/kpi", label: "KPIs" },
   ];
-}
-
-export function getCaptainExtrasMenuItems(): CaptainNavMenuItem[] {
-  return getCaptainMoreMenuItems();
-}
-
-export function getViewerExtrasMenuItems(): CaptainNavMenuItem[] {
-  return [];
 }
 
 export function getCaptainNavLinks(): CaptainNavEntry[] {

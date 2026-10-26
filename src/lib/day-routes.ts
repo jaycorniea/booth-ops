@@ -26,13 +26,6 @@ export function dayDashboardHref(eventDate: string, captainSlot?: CaptainSlot): 
   return `/day/${eventDate}`;
 }
 
-export type DaySubpageSegment = (typeof DAY_SUBPAGE_SEGMENTS)[number];
-
-/** EOD (and legacy subpages) under `/day/{date}/…`. */
-export function daySubpageHref(eventDate: string, segment: DaySubpageSegment): string {
-  return `/day/${eventDate}/${segment}`;
-}
-
 /** Paths to revalidate after day dashboard data changes. */
 export function dayDashboardRevalidatePaths(eventDate: string): string[] {
   if (isSplitCaptainDay(eventDate)) {

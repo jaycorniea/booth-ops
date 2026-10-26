@@ -55,12 +55,6 @@ export async function ensureInitialized(init: () => Promise<void>): Promise<void
   await initPromise;
 }
 
-/** Test-only: clear cached client between isolated DB file runs. */
-export function resetDbClientForTests(): void {
-  client = null;
-  initPromise = null;
-}
-
 type SqlValue = string | number | null;
 type SqlArgs = SqlValue[];
 

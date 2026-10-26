@@ -3,8 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
-  getDayCaptains,
-  getChecklist,
   getShiftById,
   setChecklistItem,
   setDayCaptain,
@@ -183,6 +181,3 @@ export async function setChecklistAction(
   await setChecklistItem(eventDate, key, isChecked);
   revalidateDayDashboard(eventDate);
 }
-
-void getDayCaptains;
-void getChecklist;

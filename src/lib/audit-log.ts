@@ -3,7 +3,7 @@ import type { FieldChange } from "./audit-format";
 import { sqlAll, sqlRun } from "./db-client";
 
 export type { FieldChange } from "./audit-format";
-export { formatFieldChange, parseAuditChanges } from "./audit-format";
+export { parseAuditChanges } from "./audit-format";
 
 export type AuditOperation = "create" | "update" | "delete";
 
@@ -145,24 +145,8 @@ export async function recordAudit(params: {
   }
 }
 
-export async function listAuditLog(
-  limit = 100,
-  offset = 0,
-  options?: { sessionId?: string | null }
-): Promise<AuditLogEntry[]> {
+export async function listAuditLog(limit = 100, offset = 0): Promise<AuditLogEntry[]> {
   await ensureAuditSchema();
-  const sessionId = options?.sessionId?.trim();
-  if (sessionId) {
-    return sqlAll<AuditLogEntry>(
-      `SELECT id, actor_role, session_id, entity_type, entity_id, operation,
-              summary, changes, event_date, created_at
-       FROM audit_log
-       WHERE session_id = ?
-       ORDER BY created_at DESC
-       LIMIT ? OFFSET ?`,
-      [sessionId, limit, offset]
-    );
-  }
   return sqlAll<AuditLogEntry>(
     `SELECT id, actor_role, session_id, entity_type, entity_id, operation,
             summary, changes, event_date, created_at
@@ -173,27 +157,6 @@ export async function listAuditLog(
   );
 }
 
-export async function countAuditBySession(
-  sessionIds: string[]
-): Promise<Map<string, number>> {
-  await ensureAuditSchema();
-  const counts = new Map<string, number>();
-  if (!sessionIds.length) return counts;
-
-  const placeholders = sessionIds.map(() => "?").join(", ");
-  const rows = await sqlAll<{ session_id: string; count: number }>(
-    `SELECT session_id, COUNT(*) as count
-     FROM audit_log
-     WHERE session_id IN (${placeholders})
-     GROUP BY session_id`,
-    sessionIds
-  );
-  for (const row of rows) {
-    counts.set(row.session_id, row.count);
-  }
-  return counts;
-}
-
 export async function listShiftAuditLogAsc(): Promise<AuditLogEntry[]> {
   await ensureAuditSchema();
   return sqlAll<AuditLogEntry>(
@@ -202,30 +165,5 @@ export async function listShiftAuditLogAsc(): Promise<AuditLogEntry[]> {
      FROM audit_log
      WHERE entity_type = 'shift'
      ORDER BY created_at ASC, id ASC`
-  );
-}
-
-export async function listAuditLogAfterId(afterId: number): Promise<AuditLogEntry[]> {
-  await ensureAuditSchema();
-  return sqlAll<AuditLogEntry>(
-    `SELECT id, actor_role, session_id, entity_type, entity_id, operation,
-            summary, changes, event_date, created_at
-     FROM audit_log
-     WHERE id > ?
-     ORDER BY id ASC`,
-    [afterId]
-  );
-}
-
-export async function listAuditLogByIds(ids: number[]): Promise<AuditLogEntry[]> {
-  await ensureAuditSchema();
-  if (!ids.length) return [];
-  const placeholders = ids.map(() => "?").join(", ");
-  return sqlAll<AuditLogEntry>(
-    `SELECT id, actor_role, session_id, entity_type, entity_id, operation,
-            summary, changes, event_date, created_at
-     FROM audit_log
-     WHERE id IN (${placeholders})`,
-    ids
   );
 }

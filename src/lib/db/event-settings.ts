@@ -32,10 +32,6 @@ type EventSettingsRow = {
 
 let hydrated = false;
 
-export function resetEventSettingsHydrationForTests(): void {
-  hydrated = false;
-}
-
 export async function ensureEventSettingsSchema(): Promise<void> {
   await sqlRun(`
     CREATE TABLE IF NOT EXISTS event_settings (

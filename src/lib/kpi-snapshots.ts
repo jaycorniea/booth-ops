@@ -14,10 +14,6 @@ export interface KpiSnapshotRow {
   recordedAt: string;
 }
 
-export interface ShiftSlotsHistoryRow extends KpiSnapshotRow {
-  deltaFilled: number | null;
-}
-
 let schemaReady = false;
 
 export function countShiftSlots(shifts: Shift[]): { filled: number; total: number } {
@@ -80,20 +76,6 @@ export async function listShiftSlotsSnapshots(): Promise<KpiSnapshotRow[]> {
      ORDER BY snapshot_date ASC`,
     [SHIFT_SLOTS_METRIC]
   );
-}
-
-export function withShiftSlotsDeltas(rows: KpiSnapshotRow[]): ShiftSlotsHistoryRow[] {
-  let priorFilled: number | null = null;
-  return rows.map((row) => {
-    const deltaFilled = priorFilled === null ? null : row.filled - priorFilled;
-    priorFilled = row.filled;
-    return { ...row, deltaFilled };
-  });
-}
-
-export async function listShiftSlotsHistory(): Promise<ShiftSlotsHistoryRow[]> {
-  const rows = await listShiftSlotsSnapshots();
-  return withShiftSlotsDeltas(rows);
 }
 
 export async function computeEventShiftSlotTotals(): Promise<{ filled: number; total: number }> {

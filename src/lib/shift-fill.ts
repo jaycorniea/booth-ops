@@ -9,10 +9,6 @@ export const FILL_PERCENT_YELLOW_PLANNING = 50;
 export const FILL_PERCENT_GREEN_TIGHT = 99;
 export const FILL_PERCENT_YELLOW_TIGHT = 95;
 
-/** Live cutoffs (tight from 7 days before event open). Prefer {@link fillPercentThresholds}. */
-export const FILL_PERCENT_GREEN = FILL_PERCENT_GREEN_TIGHT;
-export const FILL_PERCENT_YELLOW = FILL_PERCENT_YELLOW_TIGHT;
-
 export function fillPercentThresholds(asOf = new Date()): { green: number; yellow: number } {
   const day = centralDateString(asOf);
   if (day >= getCoverageTightenDate()) {
@@ -47,14 +43,8 @@ export function formatFillPercent(percent: number): string {
 }
 
 /** Accessible label: percent, fraction, optional scope (e.g. "for this day"). */
-export function fillSlotsAriaLabel(
-  filled: number,
-  total: number,
-  scope?: string,
-  extraCount = 0
-): string {
+export function fillSlotsAriaLabel(filled: number, total: number, scope?: string): string {
   const percent = fillPercent(filled, total);
   const scopeSuffix = scope ? ` ${scope}` : "";
-  const extra = extraCount > 0 ? `, plus ${extraCount} extra` : "";
-  return `${formatFillPercent(percent)} of volunteer slots filled (${filled} of ${total}${extra})${scopeSuffix}`;
+  return `${formatFillPercent(percent)} of volunteer slots filled (${filled} of ${total})${scopeSuffix}`;
 }

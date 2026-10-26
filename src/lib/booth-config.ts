@@ -230,7 +230,3 @@ export function loadBoothConfig(force = false): BoothConfig {
 export function getBoothConfig(): BoothConfig {
   return loadBoothConfig();
 }
-
-export function resetBoothConfigForTests(next?: BoothConfig): void {
-  cached = next ?? null;
-}

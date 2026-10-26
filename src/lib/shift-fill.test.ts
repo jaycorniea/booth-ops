@@ -48,8 +48,5 @@ describe("shift-fill", () => {
     expect(fillSlotsAriaLabel(6, 12, "for this day")).toBe(
       "50% of volunteer slots filled (6 of 12) for this day"
     );
-    expect(fillSlotsAriaLabel(10, 12, "for this day", 2)).toBe(
-      "83% of volunteer slots filled (10 of 12, plus 2 extra) for this day"
-    );
   });
 });

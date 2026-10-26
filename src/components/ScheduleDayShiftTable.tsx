@@ -51,7 +51,6 @@ export function ScheduleDayShiftTable({
                 name={col.name}
                 phone={col.phone}
                 email={col.email}
-                extra={col.extra}
                 role={role}
                 allowContact={allowContact}
                 showContact={showContact}
@@ -68,7 +67,6 @@ function ScheduleVolunteerCell({
   name,
   phone,
   email,
-  extra,
   role,
   allowContact,
   showContact,
@@ -76,7 +74,6 @@ function ScheduleVolunteerCell({
   name?: string | null;
   phone?: string | null;
   email?: string | null;
-  extra: boolean;
   role: AuthRole;
   allowContact: boolean;
   showContact: boolean;
@@ -86,7 +83,7 @@ function ScheduleVolunteerCell({
   return (
     <td className={SCHEDULE_CELL}>
       {open ? (
-        extra ? null : <span className={UNASSIGNED_SLOT_TEXT_CLASS}>Open</span>
+        <span className={UNASSIGNED_SLOT_TEXT_CLASS}>Open</span>
       ) : (
         <div className="min-w-0 space-y-0.5">
           <p className="font-medium text-slate-800 break-words">

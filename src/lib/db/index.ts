@@ -366,51 +366,6 @@ export async function getShiftById(id: number): Promise<Shift | undefined> {
   return rows[0];
 }
 
-export async function getShiftCoverageSummary() {
-  await dbReady();
-  const shifts = await loadShifts();
-  const byDate = new Map<string, Shift[]>();
-  for (const shift of shifts) {
-    const list = byDate.get(shift.event_date) ?? [];
-    list.push(shift);
-    byDate.set(shift.event_date, list);
-  }
-  return [...byDate.entries()].map(([event_date, dayShifts]) => ({
-    event_date,
-    total_shifts: dayShifts.length,
-    filled_shifts: dayShifts.filter((s) => s.volunteers.some((v) => v.name.trim())).length,
-  }));
-}
-
-export async function getSyncMetadata(key: string): Promise<string | null> {
-  const bulk = await getSyncMetadataBulk([key]);
-  return bulk[key] ?? null;
-}
-
-export async function getSyncMetadataBulk(keys: string[]): Promise<Record<string, string | null>> {
-  if (!keys.length) return {};
-  await dbReady();
-  const placeholders = keys.map(() => "?").join(", ");
-  const rows = await sqlAll<{ key: string; value: string }>(
-    `SELECT key, value FROM sync_metadata WHERE key IN (${placeholders})`,
-    keys
-  );
-  const out = Object.fromEntries(keys.map((key) => [key, null])) as Record<string, string | null>;
-  for (const row of rows) {
-    out[row.key] = row.value;
-  }
-  return out;
-}
-
-export async function setSyncMetadata(key: string, value: string) {
-  await dbReady();
-  await sqlRun(
-    `INSERT INTO sync_metadata (key, value, updated_at) VALUES (?, ?, datetime('now'))
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')`,
-    [key, value]
-  );
-}
-
 export async function updateShift(
   id: number,
   patch: {
@@ -465,11 +420,6 @@ export async function getDayCaptains(eventDate: string): Promise<DayCaptainRow[]
   return dayCaptainsFromRows(eventDate, rows);
 }
 
-export async function getDayCaptain(eventDate: string): Promise<DayCaptainRow | undefined> {
-  const captains = await getDayCaptains(eventDate);
-  return captains.find((c) => c.name?.trim()) ?? captains[0];
-}
-
 export async function listDayCaptains(): Promise<DayCaptainRow[]> {
   await dbReady();
   return sqlAll<DayCaptainRow>("SELECT * FROM day_captains ORDER BY event_date, captain_slot");
@@ -492,15 +442,6 @@ export async function setDayCaptain(
        email = excluded.email`,
     [eventDate, captainSlot, name, phone, email]
   );
-}
-
-export async function getChecklist(eventDate: string): Promise<Record<string, boolean>> {
-  await dbReady();
-  const rows = await sqlAll<{ checklist_key: string; checked: number }>(
-    "SELECT checklist_key, checked FROM checklist_state WHERE event_date = ?",
-    [eventDate]
-  );
-  return Object.fromEntries(rows.map((r) => [r.checklist_key, r.checked === 1]));
 }
 
 export async function setChecklistItem(eventDate: string, key: string, checked: boolean) {

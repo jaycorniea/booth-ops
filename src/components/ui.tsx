@@ -57,22 +57,3 @@ export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
 export function Label({ children }: { children: ReactNode }) {
   return <label className="mb-1 block text-xs font-medium text-slate-600">{children}</label>;
 }
-
-export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <select
-      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-      {...props}
-    />
-  );
-}
-
-export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return (
-    <textarea
-      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-      rows={3}
-      {...props}
-    />
-  );
-}

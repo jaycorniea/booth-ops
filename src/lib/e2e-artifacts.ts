@@ -1,8 +1,6 @@
-import { sqlAll, sqlRun } from "./db-client";
 import type { Shift } from "./db/types";
 import { padVolunteers } from "./shift-slots";
 
-export const E2E_VOLUNTEER_NAME_PREFIX = "E2E ";
 export const LEGACY_PLAYWRIGHT_SHIFT_VOL_NAMES = ["Alpha T.", "Beta T.", "Gamma T."] as const;
 
 export type VolunteerIdentity = {
@@ -32,10 +30,6 @@ export function isE2eVolunteerIdentity(identity: VolunteerIdentity): boolean {
   return false;
 }
 
-export function isE2eVolunteerName(name: string): boolean {
-  return isE2eVolunteerIdentity({ name });
-}
-
 export function sanitizeShiftRow(shift: Shift): Shift {
   return {
     ...shift,
@@ -49,16 +43,4 @@ export function sanitizeShiftRow(shift: Shift): Shift {
 
 export function sanitizeShiftRows(shifts: Shift[]): Shift[] {
   return shifts.map(sanitizeShiftRow);
-}
-
-export async function purgeE2eArtifacts(): Promise<void> {
-  try {
-    await sqlRun(
-      `UPDATE shift_assignments SET name = '', phone = '', email = ''
-       WHERE name GLOB 'E2E *' OR LOWER(email) GLOB '*e2e*@example.com'`
-    );
-  } catch {
-    /* tables may not exist yet */
-  }
-  void sqlAll;
 }

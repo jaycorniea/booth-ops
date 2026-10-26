@@ -62,8 +62,6 @@ export function eventSettingsFromConfig(config: BoothConfig = getBoothConfig()):
   };
 }
 
-export const DEFAULT_EVENT_SETTINGS: EventSettings = eventSettingsFromConfig();
-
 let activeEventSettings: EventSettings = eventSettingsFromConfig();
 
 export function getActiveEventSettings(): EventSettings {
@@ -79,10 +77,6 @@ export function setActiveEventSettings(next: EventSettings): void {
       pm: { ...next.captainSplit.pm, shiftNums: [...next.captainSplit.pm.shiftNums] },
     },
   };
-}
-
-export function resetActiveEventSettings(): void {
-  activeEventSettings = eventSettingsFromConfig();
 }
 
 export function isIsoDate(value: string): boolean {
@@ -251,14 +245,4 @@ export function formatEventDateLong(iso: string, locale = getBoothConfig().org.l
     day: "numeric",
     year: "numeric",
   });
-}
-
-export function boothWhenWhereLines(settings: EventSettings = getActiveEventSettings()): string[] {
-  const derived = deriveEventSettings(settings);
-  const eventName = getBoothConfig().event.name;
-  return [
-    `${eventName}: ${formatEventDateLong(settings.openDate)} through ${formatEventDateLong(settings.closeDate)} (${derived.dayCount} days).`,
-    `Booth: ${settings.boothLocation} — ${settings.boothName}.`,
-    `Booth hours: ${settings.boothHours} each event day.`,
-  ];
 }

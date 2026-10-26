@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.0
+
+- Remove unused portal-log, orientation, and print leftovers
+- Drop links to pages that are not in this app: orientation, venue map, resources, and the day captain report
+
 ## 0.6.1
 
 - Remove the triangle mark from the header and the browser icon

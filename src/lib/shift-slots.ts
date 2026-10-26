@@ -1,5 +1,4 @@
-import type { Shift, ShiftVolunteer } from "./db/types";
-import { hasVolunteer } from "./event-dates";
+import type { ShiftVolunteer } from "./db/types";
 import { getActiveEventSettings } from "./event-settings";
 
 export function officialSlotsPerShift(override?: number): number {
@@ -12,10 +11,6 @@ export function officialSlotIndexes(count = officialSlotsPerShift()): number[] {
 
 export function emptyVolunteer(slotIndex: number): ShiftVolunteer {
   return { slot_index: slotIndex, name: "", phone: "", email: "" };
-}
-
-export function emptyVolunteers(count = officialSlotsPerShift()): ShiftVolunteer[] {
-  return officialSlotIndexes(count).map(emptyVolunteer);
 }
 
 export function padVolunteers(
@@ -33,10 +28,6 @@ export function padVolunteers(
       email: row.email ?? "",
     };
   });
-}
-
-export function volunteerAt(shift: Shift, slotIndex: number): ShiftVolunteer {
-  return shift.volunteers.find((v) => v.slot_index === slotIndex) ?? emptyVolunteer(slotIndex);
 }
 
 export function slotNameKey(slotIndex: number): string {
@@ -59,10 +50,6 @@ export function volunteerSlotVacancyLabel(slotIndex: number): string {
   return `Vol ${slotIndex} open`;
 }
 
-export function countFilledOfficialSlots(shift: Shift): number {
-  return shift.volunteers.filter((v) => hasVolunteer(v.name)).length;
-}
-
 export type VolunteerSlot = number;
 
 export function volunteerSlots(): number[] {
@@ -75,13 +62,4 @@ export const VOLUNTEER_SLOT_LABEL: Record<number, string> = Object.fromEntries(
   volunteerSlots().map((n) => [n, volunteerSlotLabel(n)])
 );
 
-export function extraVolunteerFillLabel(_count = 0): string {
-  return "";
-}
 
-export function shiftHasOpenVolunteerSlot(shift: Shift): boolean {
-  const n = officialSlotsPerShift();
-  const filled = padVolunteers(shift.volunteers, n).filter((v) => hasVolunteer(v.name)).length;
-  if (filled < n) return true;
-  return shift.no_show === 1;
-}

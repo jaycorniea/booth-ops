@@ -58,13 +58,6 @@ export function formatShiftOption(shiftNum: number): string {
   return `Shift ${shiftNum}: ${time}`;
 }
 
-export function getShiftOptions(): { value: string; label: string }[] {
-  return getShiftSchedule().map((s) => {
-    const label = formatShiftOption(s.num);
-    return { value: label, label };
-  });
-}
-
 export type EventPhase = "pre-event" | "during-event" | "post-event";
 
 export function getEventPhase(today: string): EventPhase {
