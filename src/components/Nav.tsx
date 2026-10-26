@@ -444,16 +444,6 @@ export function Nav({
             </div>
           </div>
 
-          {!compactHeader && (
-            <div className="hidden shrink-0 rounded-lg bg-white px-3 py-2 shadow-md sm:block">
-              <img
-                src="/favicon.ico"
-                alt="Riverside Arts Weekend"
-                className="h-12 w-auto max-w-[min(38vw,20rem)] object-contain md:h-14 lg:h-16"
-              />
-            </div>
-          )}
-
           <div className="flex flex-wrap items-center justify-end gap-2">
             {roleSwitcher ?? <ActiveRoleBadge role={role} />}
             <form action="/api/logout" method="POST">

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1
+
+- Remove the triangle mark from the header and the browser icon
+
 ## 0.6.0
 
 - Remove the portal log, Captain IPs, and the session, geo, and IP tracking that fed them
