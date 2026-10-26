@@ -1,4 +1,3 @@
-import { parseAuditChanges, type AuditLogEntry } from "./audit-log";
 import { sqlAll, sqlRun } from "./db-client";
 import type { Shift } from "./db/types";
 import { padVolunteers } from "./shift-slots";
@@ -35,31 +34,6 @@ export function isE2eVolunteerIdentity(identity: VolunteerIdentity): boolean {
 
 export function isE2eVolunteerName(name: string): boolean {
   return isE2eVolunteerIdentity({ name });
-}
-
-export function isE2eAuditEntry(entry: AuditLogEntry): boolean {
-  if (/\bE2E\b/i.test(entry.summary)) return true;
-  if (/e2e[^@\s]*@example\.com/i.test(entry.summary)) return true;
-  const changes = parseAuditChanges(entry.changes);
-  for (const [key, change] of Object.entries(changes)) {
-    if (key === "name" || key.endsWith("_name")) {
-      if (isE2eVolunteerIdentity({ name: String(change.from ?? "") })) return true;
-      if (isE2eVolunteerIdentity({ name: String(change.to ?? "") })) return true;
-    }
-    if (key === "email" || key.endsWith("_email")) {
-      const from = String(change.from ?? "");
-      const to = String(change.to ?? "");
-      if (isE2eVolunteerEmail(from) || isE2eVolunteerEmail(to)) return true;
-    }
-  }
-  return false;
-}
-
-export function isE2ePortalAlert(alert: { title: string; detail: string }): boolean {
-  if (/\bE2E\b/i.test(alert.title)) return true;
-  if (/e2e[^@\s]*@example\.com/i.test(alert.title)) return true;
-  if (/e2e note/i.test(alert.detail)) return true;
-  return false;
 }
 
 export function sanitizeShiftRow(shift: Shift): Shift {

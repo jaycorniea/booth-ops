@@ -14,7 +14,7 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 
 const PUBLIC = ["/login", "/api/health"];
-const ADMIN_ONLY = ["/alerts", "/portal-log", "/captain-ips", "/event-settings"];
+const ADMIN_ONLY = ["/portal-log", "/captain-ips", "/event-settings"];
 const WRITE_API: string[] = [];
 const VOLUNTEER_ALLOWED_PREFIXES = [
   "/volunteer",

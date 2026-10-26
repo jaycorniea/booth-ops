@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0
+
+- Remove the alerts page, the Admin menu item, and the stored alert sync
+- Event settings, the portal log, captain IPs, and fill KPIs stay
+- No-show and check-in stay on the day sheet
+
 ## 0.4.0
 
 - Remove the admin Reports item and the reports page
