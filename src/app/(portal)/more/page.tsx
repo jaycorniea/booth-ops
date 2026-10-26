@@ -21,7 +21,7 @@ export default async function CaptainMorePage() {
       <div>
         <h2 className="text-2xl font-bold">{CAPTAIN_MORE_NAV_LABEL}</h2>
         <p className="text-sm text-slate-600">
-          Extra tools. Shift gaps still go to the coordinator — captains do not assign on-call from here.
+          Extra tools. Shift gaps still go to the coordinator.
         </p>
       </div>
 

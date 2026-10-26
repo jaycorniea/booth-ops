@@ -4,8 +4,6 @@ const STATIC_PATH_LABELS: Record<string, string> = {
   "/": "Home",
   "/schedule": "Schedule",
   "/volunteers": "Volunteer profiles",
-  "/interested": "Interested pool",
-  "/on-call": "On-call pool",
   "/reports": "Reports",
   "/issues": "Issues",
   "/feedback": "Feedback",
@@ -18,9 +16,6 @@ const STATIC_PATH_LABELS: Record<string, string> = {
   "/event-settings": "Event settings",
   "/login": "Login",
   "/volunteer": "Volunteer hub",
-  "/join": "Volunteer signup",
-  "/join-on-call": "Join on-call",
-  "/join-shift": "Join shift",
   "/more": "More",
   "/more/add-volunteer": "Add a volunteer",
   "/day-log": "Day log",
@@ -46,11 +41,6 @@ export function formatPortalPath(path: string | null | undefined): string {
     if (!sub) return `Day · ${dayTitle}`;
     const subLabel = DAY_SUBPAGE_LABELS[sub] ?? sub;
     return `${subLabel} · ${formatEventDate(iso)}`;
-  }
-
-  const joinShiftMatch = /^\/join-shift\/(\d{4}-\d{2}-\d{2})$/.exec(normalized);
-  if (joinShiftMatch) {
-    return `Join shift · ${formatEventDate(joinShiftMatch[1])}`;
   }
 
   const orientationMatch = /^\/orientation\/([^/]+)$/.exec(normalized);

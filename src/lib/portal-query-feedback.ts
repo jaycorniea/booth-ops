@@ -67,69 +67,7 @@ export const PORTAL_ISSUE_ERRORS: Record<string, PortalQueryMessage> = {
   },
 };
 
-export const PORTAL_JOIN_SHIFT_ERRORS: Record<string, PortalQueryMessage> = {
-  password: {
-    tone: "error",
-    message: "Incorrect signup password. Contact the coordinator for the current password.",
-  },
-  name: {
-    tone: "error",
-    message: "Please enter your name.",
-  },
-  no_shifts: {
-    tone: "error",
-    message: "All volunteer slots are filled for this day.",
-  },
-  shifts: {
-    tone: "error",
-    message: "Please choose at least one available shift.",
-  },
-};
-
-/** Public `/join-on-call` gate + application form. */
-export const PORTAL_JOIN_ON_CALL_ERRORS: Record<string, PortalQueryMessage> = {
-  password: {
-    tone: "error",
-    message: "Incorrect signup password. The password is shown below the field.",
-  },
-  name: {
-    tone: "error",
-    message: "Please enter your name.",
-  },
-};
-
-export const PORTAL_JOIN_SHIFT_DAY_ERRORS: Record<string, PortalQueryMessage> = {
-  password: {
-    tone: "error",
-    message: "Incorrect signup password. Ask your Day Captain for the current password.",
-  },
-  name: {
-    tone: "error",
-    message: "Please enter your name.",
-  },
-  no_shifts: {
-    tone: "error",
-    message: "All volunteer slots are filled for this day.",
-  },
-  shifts: {
-    tone: "error",
-    message: "Please choose at least one available shift.",
-  },
-};
-
-export const PORTAL_VOLUNTEERS_ERRORS: Record<string, PortalQueryMessage> = {
-  on_call_name: {
-    tone: "error",
-    message: "Could not add to on-call pool — name is required.",
-  },
-};
-
-export const PORTAL_ON_CALL_ERRORS: Record<string, PortalQueryMessage> = {
-  default: {
-    tone: "error",
-    message: "Could not update that application. It may have already been reviewed.",
-  },
-};
+export const PORTAL_VOLUNTEERS_ERRORS: Record<string, PortalQueryMessage> = {};
 
 const DEFAULT_ERROR: PortalQueryMessage = {
   tone: "error",

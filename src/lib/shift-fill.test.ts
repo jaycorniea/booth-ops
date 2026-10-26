@@ -5,7 +5,6 @@ import {
   fillPercentTone,
   fillSlotsAriaLabel,
   formatFillPercent,
-  onCallBackupTone,
 } from "./shift-fill";
 
 describe("shift-fill", () => {
@@ -52,11 +51,5 @@ describe("shift-fill", () => {
     expect(fillSlotsAriaLabel(10, 12, "for this day", 2)).toBe(
       "83% of volunteer slots filled (10 of 12, plus 2 extra) for this day"
     );
-  });
-
-  it("maps on-call backup depth to stoplight tone", () => {
-    expect(onCallBackupTone(0)).toBe("red");
-    expect(onCallBackupTone(1)).toBe("yellow");
-    expect(onCallBackupTone(2)).toBe("green");
   });
 });

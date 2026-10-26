@@ -4,11 +4,6 @@ import {
   getCaptainSlotsForDate,
 } from "../day-captain-slots";
 import { sanitizeShiftRows } from "../e2e-artifacts";
-import {
-  occupantsByShift,
-  shiftMatchForInterested,
-  shouldUnplaceInterested,
-} from "../unplace-cleared-shift";
 import type { EventSettings } from "../event-settings";
 import {
   ensureEventScheduleRows,
@@ -19,19 +14,10 @@ import {
 } from "./event-settings";
 import { padVolunteers } from "../shift-slots";
 import { getActiveEventSettings } from "../event-settings";
-import type { OnCallShiftRequest } from "../on-call-shift-requests";
-import {
-  isOnCallVolunteerStatus,
-  ON_CALL_ACTIVE_STATUSES,
-  type OnCallVolunteerStatus,
-} from "../on-call-status";
 import type {
   CaptainFeedback,
   DayCaptainRow,
-  InterestedVolunteer,
-  InterestedVolunteerStatus,
   Issue,
-  OnCallVolunteer,
   Shift,
   ShiftVolunteer,
 } from "./types";
@@ -144,53 +130,6 @@ const SCHEMA_SQL = `
     email TEXT NOT NULL DEFAULT '',
     UNIQUE(shift_id, slot_index),
     FOREIGN KEY (shift_id) REFERENCES shifts(id)
-  );
-
-  CREATE TABLE IF NOT EXISTS on_call (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    phone TEXT DEFAULT '',
-    email TEXT DEFAULT '',
-    availability TEXT DEFAULT '',
-    notice_minutes INTEGER DEFAULT 45,
-    available_dates TEXT DEFAULT 'any',
-    available_shifts TEXT DEFAULT 'any',
-    bilingual INTEGER NOT NULL DEFAULT 0,
-    last_contacted TEXT DEFAULT '',
-    contacted_event_date TEXT DEFAULT '',
-    contacted_shift_num INTEGER,
-    status TEXT NOT NULL DEFAULT 'approved',
-    placed_event_date TEXT DEFAULT '',
-    placed_shift_num INTEGER,
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS on_call_shift_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    on_call_id INTEGER NOT NULL,
-    event_date TEXT NOT NULL,
-    shift_num INTEGER NOT NULL,
-    contacted_at TEXT NOT NULL DEFAULT (datetime('now')),
-    status TEXT NOT NULL DEFAULT 'pending'
-  );
-
-  CREATE TABLE IF NOT EXISTS interested_volunteers (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    phone TEXT DEFAULT '',
-    email TEXT DEFAULT '',
-    notes TEXT DEFAULT '',
-    source TEXT DEFAULT '',
-    available_dates TEXT DEFAULT 'any',
-    available_shifts TEXT DEFAULT 'any',
-    bilingual INTEGER NOT NULL DEFAULT 0,
-    status TEXT NOT NULL DEFAULT 'interested',
-    placed_event_date TEXT DEFAULT '',
-    placed_shift_num INTEGER,
-    last_contacted TEXT DEFAULT '',
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
   CREATE TABLE IF NOT EXISTS day_captains (
@@ -368,27 +307,6 @@ async function seedDemoVolunteers(): Promise<void> {
     await sqlRun(
       `UPDATE shift_assignments SET name = ?, phone = ?, email = ? WHERE shift_id = ? AND slot_index = ?`,
       [row.name, row.phone, row.email, row.shift.id, row.slot]
-    );
-  }
-
-  const interestedCount = await sqlGet<{ c: number }>("SELECT COUNT(*) as c FROM interested_volunteers");
-  if ((interestedCount?.c ?? 0) === 0) {
-    await sqlRun(
-      `INSERT INTO interested_volunteers (
-        name, phone, email, notes, source, available_dates, available_shifts, bilingual, status
-      ) VALUES (?, ?, ?, ?, ?, 'any', 'any', 0, 'interested')`,
-      ["Taylor Nguyen", "555-0110", "taylor@example.com", "Prefers morning shifts", "demo seed"]
-    );
-  }
-
-  const onCallCount = await sqlGet<{ c: number }>("SELECT COUNT(*) as c FROM on_call");
-  if ((onCallCount?.c ?? 0) === 0) {
-    await sqlRun(
-      `INSERT INTO on_call (
-        name, phone, email, availability, notice_minutes, available_dates, available_shifts,
-        bilingual, status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, 45, 'any', 'any', 0, 'approved', datetime('now'), datetime('now'))`,
-      ["Casey Jordan", "555-0120", "casey@example.com", "Can arrive within 30 minutes"]
     );
   }
 }
@@ -603,436 +521,6 @@ export async function setDayCaptain(
   );
 }
 
-function normalizeInterestedVolunteer(row: InterestedVolunteer): InterestedVolunteer {
-  return {
-    ...row,
-    available_dates: row.available_dates || "any",
-    available_shifts: row.available_shifts || "any",
-    bilingual: row.bilingual ?? 0,
-    status: (row.status || "interested") as InterestedVolunteerStatus,
-    placed_event_date: row.placed_event_date ?? "",
-    placed_shift_num: row.placed_shift_num ?? null,
-    last_contacted: row.last_contacted ?? "",
-    created_at: row.created_at ?? "",
-    updated_at: row.updated_at ?? "",
-  };
-}
-
-export async function getInterestedVolunteerById(id: number): Promise<InterestedVolunteer | undefined> {
-  await dbReady();
-  const row = await sqlGet<InterestedVolunteer>(
-    "SELECT * FROM interested_volunteers WHERE id = ?",
-    [id]
-  );
-  return row ? normalizeInterestedVolunteer(row) : undefined;
-}
-
-export async function listInterestedVolunteers(
-  status?: InterestedVolunteerStatus
-): Promise<InterestedVolunteer[]> {
-  await dbReady();
-  const rows = status
-    ? await sqlAll<InterestedVolunteer>(
-        "SELECT * FROM interested_volunteers WHERE status = ? ORDER BY datetime(created_at) DESC, name",
-        [status]
-      )
-    : await sqlAll<InterestedVolunteer>(
-        "SELECT * FROM interested_volunteers ORDER BY datetime(created_at) DESC, name"
-      );
-  return rows.map(normalizeInterestedVolunteer);
-}
-
-export type InterestedVolunteerInput = Omit<
-  InterestedVolunteer,
-  "id" | "last_contacted" | "created_at" | "updated_at"
->;
-
-export async function addInterestedVolunteer(v: InterestedVolunteerInput) {
-  await dbReady();
-  await sqlRun(
-    `INSERT INTO interested_volunteers (
-      name, phone, email, notes, source, available_dates, available_shifts, bilingual,
-      status, placed_event_date, placed_shift_num
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      v.name,
-      v.phone,
-      v.email,
-      v.notes,
-      v.source,
-      v.available_dates || "any",
-      v.available_shifts || "any",
-      v.bilingual ?? 0,
-      v.status || "interested",
-      v.placed_event_date ?? "",
-      v.placed_shift_num ?? null,
-    ]
-  );
-}
-
-export async function updateInterestedVolunteer(
-  id: number,
-  patch: Partial<Omit<InterestedVolunteer, "id" | "created_at">>
-) {
-  await dbReady();
-  const fields: string[] = [];
-  const values: (string | number | null)[] = [];
-  for (const [k, val] of Object.entries(patch)) {
-    if (k === "id" || k === "created_at") continue;
-    fields.push(`${k} = ?`);
-    values.push(val as string | number | null);
-  }
-  fields.push("updated_at = datetime('now')");
-  values.push(id);
-  await sqlRun(`UPDATE interested_volunteers SET ${fields.join(", ")} WHERE id = ?`, values);
-}
-
-export async function deleteInterestedVolunteer(id: number) {
-  await dbReady();
-  await sqlRun("DELETE FROM interested_volunteers WHERE id = ?", [id]);
-}
-
-export async function unplaceInterestedMissingFromShift(shift: Shift): Promise<number> {
-  await dbReady();
-  const placed = await sqlAll<InterestedVolunteer>(
-    "SELECT * FROM interested_volunteers WHERE status = 'placed' AND placed_event_date = ? AND placed_shift_num = ?",
-    [shift.event_date, shift.shift_num]
-  );
-  if (!placed.length) return 0;
-  const remaining = occupantsByShift([shift]);
-  let count = 0;
-  for (const volunteer of placed.map(normalizeInterestedVolunteer)) {
-    if (!shouldUnplaceInterested(volunteer, remaining)) continue;
-    await sqlRun(
-      `UPDATE interested_volunteers
-       SET status = 'interested', placed_event_date = '', placed_shift_num = NULL, updated_at = datetime('now')
-       WHERE id = ?`,
-      [volunteer.id]
-    );
-    count++;
-  }
-  return count;
-}
-
-export async function placeInterestedPresentOnShift(shift: Shift): Promise<number> {
-  await dbReady();
-  const open = await sqlAll<InterestedVolunteer>(
-    "SELECT * FROM interested_volunteers WHERE status = 'interested'"
-  );
-  if (!open.length) return 0;
-  const occupants = occupantsByShift([shift]);
-  let count = 0;
-  for (const volunteer of open.map(normalizeInterestedVolunteer)) {
-    const match = shiftMatchForInterested(volunteer, occupants);
-    if (!match) continue;
-    await sqlRun(
-      `UPDATE interested_volunteers
-       SET status = 'placed', placed_event_date = ?, placed_shift_num = ?, updated_at = datetime('now')
-       WHERE id = ?`,
-      [match.eventDate, match.shiftNum, volunteer.id]
-    );
-    count++;
-  }
-  return count;
-}
-
-export async function assignInterestedToShift(
-  shiftId: number,
-  interestedId: number,
-  slotIndex: number,
-  eventDate: string,
-  shiftNum: number
-): Promise<{ name: string } | null> {
-  await dbReady();
-  const volunteer = await sqlGet<InterestedVolunteer>(
-    "SELECT * FROM interested_volunteers WHERE id = ?",
-    [interestedId]
-  );
-  if (!volunteer || volunteer.status !== "interested") return null;
-
-  const noteTag = `[Interested roster ${new Date().toISOString().slice(0, 16).replace("T", " ")}]`;
-  await sqlRun(
-    `INSERT INTO shift_assignments (shift_id, slot_index, name, phone, email)
-     VALUES (?, ?, ?, ?, ?)
-     ON CONFLICT(shift_id, slot_index) DO UPDATE SET
-       name = excluded.name,
-       phone = excluded.phone,
-       email = excluded.email`,
-    [shiftId, slotIndex, volunteer.name, volunteer.phone, volunteer.email]
-  );
-  await sqlRun(
-    `UPDATE shifts SET no_show = 0, checked_in = 0,
-       notes = CASE WHEN notes = '' THEN ? ELSE notes || ' ' || ? END
-     WHERE id = ?`,
-    [noteTag, noteTag, shiftId]
-  );
-  await sqlRun(
-    `UPDATE interested_volunteers SET
-      status = 'placed',
-      placed_event_date = ?,
-      placed_shift_num = ?,
-      last_contacted = datetime('now'),
-      updated_at = datetime('now')
-    WHERE id = ?`,
-    [eventDate, shiftNum, interestedId]
-  );
-  return { name: volunteer.name };
-}
-
-function normalizeOnCallShiftRequest(row: OnCallShiftRequest): OnCallShiftRequest {
-  return {
-    ...row,
-    status: row.status === "fulfilled" || row.status === "cleared" ? row.status : "pending",
-  };
-}
-
-function normalizeOnCallVolunteer(row: OnCallVolunteer): OnCallVolunteer {
-  return {
-    ...row,
-    availability: row.availability ?? "",
-    notice_minutes: row.notice_minutes ?? 45,
-    available_dates: row.available_dates || "any",
-    available_shifts: row.available_shifts || "any",
-    bilingual: row.bilingual ?? 0,
-    last_contacted: row.last_contacted ?? "",
-    contacted_event_date: row.contacted_event_date ?? "",
-    contacted_shift_num: row.contacted_shift_num ?? null,
-    status: isOnCallVolunteerStatus(row.status) ? row.status : "approved",
-    placed_event_date: row.placed_event_date ?? "",
-    placed_shift_num: row.placed_shift_num ?? null,
-    created_at: row.created_at ?? "",
-    updated_at: row.updated_at ?? "",
-  };
-}
-
-export async function listPendingOnCallShiftRequests(
-  onCallId?: number
-): Promise<OnCallShiftRequest[]> {
-  await dbReady();
-  const rows = onCallId
-    ? await sqlAll<OnCallShiftRequest>(
-        `SELECT * FROM on_call_shift_requests
-         WHERE on_call_id = ? AND status = 'pending'
-         ORDER BY datetime(contacted_at) DESC, event_date, shift_num`,
-        [onCallId]
-      )
-    : await sqlAll<OnCallShiftRequest>(
-        `SELECT * FROM on_call_shift_requests
-         WHERE status = 'pending'
-         ORDER BY datetime(contacted_at) DESC, on_call_id, event_date, shift_num`
-      );
-  return rows.map(normalizeOnCallShiftRequest);
-}
-
-export async function attachPendingOnCallShiftRequests(
-  volunteers: OnCallVolunteer[]
-): Promise<OnCallVolunteer[]> {
-  if (!volunteers.length) return volunteers;
-  const pending = await listPendingOnCallShiftRequests();
-  const byVolunteer = new Map<number, OnCallShiftRequest[]>();
-  for (const request of pending) {
-    const list = byVolunteer.get(request.on_call_id) ?? [];
-    list.push(request);
-    byVolunteer.set(request.on_call_id, list);
-  }
-  return volunteers.map((volunteer) => ({
-    ...volunteer,
-    pending_shift_requests: byVolunteer.get(volunteer.id) ?? [],
-  }));
-}
-
-async function syncOnCallOutreachSummary(onCallId: number): Promise<void> {
-  const pending = await listPendingOnCallShiftRequests(onCallId);
-  if (!pending.length) {
-    await sqlRun(
-      `UPDATE on_call SET
-        last_contacted = '',
-        contacted_event_date = '',
-        contacted_shift_num = NULL,
-        status = CASE WHEN status = 'shift_requested' THEN 'approved' ELSE status END,
-        updated_at = datetime('now')
-      WHERE id = ?`,
-      [onCallId]
-    );
-    return;
-  }
-  const latest = pending[0];
-  await sqlRun(
-    `UPDATE on_call SET
-      last_contacted = ?,
-      contacted_event_date = ?,
-      contacted_shift_num = ?,
-      status = CASE WHEN status IN ('approved', 'shift_requested') THEN 'shift_requested' ELSE status END,
-      updated_at = datetime('now')
-    WHERE id = ?`,
-    [latest.contacted_at, latest.event_date, latest.shift_num, onCallId]
-  );
-}
-
-export async function clearPendingOnCallShiftRequests(onCallId: number): Promise<void> {
-  await dbReady();
-  await sqlRun(
-    `UPDATE on_call_shift_requests SET status = 'cleared' WHERE on_call_id = ? AND status = 'pending'`,
-    [onCallId]
-  );
-  await syncOnCallOutreachSummary(onCallId);
-}
-
-export async function fulfillOnCallShiftRequest(
-  onCallId: number,
-  eventDate: string,
-  shiftNum: number
-): Promise<void> {
-  await dbReady();
-  await sqlRun(
-    `UPDATE on_call_shift_requests SET status = 'fulfilled'
-     WHERE on_call_id = ? AND event_date = ? AND shift_num = ? AND status = 'pending'`,
-    [onCallId, eventDate, shiftNum]
-  );
-  await syncOnCallOutreachSummary(onCallId);
-}
-
-export async function addOnCallShiftRequest(
-  onCallId: number,
-  eventDate: string,
-  shiftNum: number
-): Promise<void> {
-  await dbReady();
-  await sqlRun(
-    `INSERT INTO on_call_shift_requests (on_call_id, event_date, shift_num, contacted_at, status)
-     VALUES (?, ?, ?, datetime('now'), 'pending')`,
-    [onCallId, eventDate, shiftNum]
-  );
-  await syncOnCallOutreachSummary(onCallId);
-}
-
-export async function getOnCallById(id: number): Promise<OnCallVolunteer | undefined> {
-  await dbReady();
-  const row = await sqlGet<OnCallVolunteer>("SELECT * FROM on_call WHERE id = ?", [id]);
-  if (!row) return undefined;
-  const [attached] = await attachPendingOnCallShiftRequests([normalizeOnCallVolunteer(row)]);
-  return attached;
-}
-
-export async function listOnCall(status?: OnCallVolunteerStatus): Promise<OnCallVolunteer[]> {
-  await dbReady();
-  const rows = status
-    ? await sqlAll<OnCallVolunteer>("SELECT * FROM on_call WHERE status = ? ORDER BY name", [status])
-    : await sqlAll<OnCallVolunteer>("SELECT * FROM on_call ORDER BY name");
-  return attachPendingOnCallShiftRequests(rows.map(normalizeOnCallVolunteer));
-}
-
-export async function listActiveOnCall(): Promise<OnCallVolunteer[]> {
-  await dbReady();
-  const placeholders = ON_CALL_ACTIVE_STATUSES.map(() => "?").join(", ");
-  const rows = await sqlAll<OnCallVolunteer>(
-    `SELECT * FROM on_call WHERE status IN (${placeholders}) ORDER BY name`,
-    [...ON_CALL_ACTIVE_STATUSES]
-  );
-  return attachPendingOnCallShiftRequests(rows.map(normalizeOnCallVolunteer));
-}
-
-export async function addOnCall(
-  v: Omit<
-    OnCallVolunteer,
-    | "id"
-    | "last_contacted"
-    | "contacted_event_date"
-    | "contacted_shift_num"
-    | "created_at"
-    | "updated_at"
-    | "placed_event_date"
-    | "placed_shift_num"
-    | "pending_shift_requests"
-  > & {
-    placed_event_date?: string;
-    placed_shift_num?: number | null;
-  }
-) {
-  await dbReady();
-  await sqlRun(
-    `INSERT INTO on_call (
-      name, phone, email, availability, notice_minutes, available_dates, available_shifts, bilingual, status,
-      created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-    [
-      v.name,
-      v.phone,
-      v.email,
-      v.availability,
-      v.notice_minutes ?? 45,
-      v.available_dates || "any",
-      v.available_shifts || "any",
-      v.bilingual ?? 0,
-      v.status || "approved",
-    ]
-  );
-}
-
-export async function updateOnCall(id: number, patch: Partial<Omit<OnCallVolunteer, "id" | "created_at">>) {
-  await dbReady();
-  const fields: string[] = [];
-  const values: (string | number | null)[] = [];
-  for (const [k, v] of Object.entries(patch)) {
-    if (k === "id" || k === "created_at" || k === "pending_shift_requests") continue;
-    fields.push(`${k} = ?`);
-    values.push(v as string | number | null);
-  }
-  if (!fields.length) return;
-  fields.push("updated_at = datetime('now')");
-  values.push(id);
-  await sqlRun(`UPDATE on_call SET ${fields.join(", ")} WHERE id = ?`, values);
-}
-
-export async function deleteOnCall(id: number) {
-  await dbReady();
-  await sqlRun("DELETE FROM on_call_shift_requests WHERE on_call_id = ?", [id]);
-  await sqlRun("DELETE FROM on_call WHERE id = ?", [id]);
-}
-
-export async function assignOnCallToShift(
-  shiftId: number,
-  onCallId: number,
-  slotIndex: number,
-  eventDate: string,
-  shiftNum: number
-): Promise<{ name: string } | null> {
-  await dbReady();
-  const onCall = await getOnCallById(onCallId);
-  if (!onCall || !ON_CALL_ACTIVE_STATUSES.includes(onCall.status)) return null;
-
-  const noteTag = `[On-call ${new Date().toISOString().slice(0, 16).replace("T", " ")}]`;
-  await sqlRun(
-    `INSERT INTO shift_assignments (shift_id, slot_index, name, phone, email)
-     VALUES (?, ?, ?, ?, ?)
-     ON CONFLICT(shift_id, slot_index) DO UPDATE SET
-       name = excluded.name,
-       phone = excluded.phone,
-       email = excluded.email`,
-    [shiftId, slotIndex, onCall.name, onCall.phone, onCall.email]
-  );
-  await sqlRun(
-    `UPDATE shifts SET no_show = 0, checked_in = 0,
-       notes = CASE WHEN notes = '' THEN ? ELSE notes || ' ' || ? END
-     WHERE id = ?`,
-    [noteTag, noteTag, shiftId]
-  );
-  await fulfillOnCallShiftRequest(onCallId, eventDate, shiftNum);
-  await sqlRun(
-    `UPDATE on_call SET
-      status = 'shift_assigned',
-      placed_event_date = ?,
-      placed_shift_num = ?,
-      last_contacted = datetime('now'),
-      contacted_event_date = '',
-      contacted_shift_num = NULL,
-      updated_at = datetime('now')
-    WHERE id = ?`,
-    [eventDate, shiftNum, onCallId]
-  );
-  return { name: onCall.name };
-}
-
 export async function getIssueById(id: number): Promise<Issue | undefined> {
   await dbReady();
   return sqlGet<Issue>("SELECT * FROM issues WHERE id = ?", [id]);
@@ -1139,9 +627,6 @@ export async function exportAllData() {
   const [
     shifts,
     assignments,
-    onCall,
-    onCallShiftRequests,
-    interestedVolunteers,
     issues,
     dayCaptains,
     captainFeedback,
@@ -1151,13 +636,6 @@ export async function exportAllData() {
   ] = await Promise.all([
     sqlAll("SELECT * FROM shifts ORDER BY event_date, shift_num"),
     sqlAll("SELECT * FROM shift_assignments ORDER BY shift_id, slot_index"),
-    sqlAll("SELECT * FROM on_call ORDER BY name"),
-    sqlAll(
-      `SELECT * FROM on_call_shift_requests
-       WHERE status = 'pending'
-       ORDER BY on_call_id, datetime(contacted_at) DESC`
-    ),
-    sqlAll("SELECT * FROM interested_volunteers ORDER BY name"),
     sqlAll("SELECT * FROM issues ORDER BY created_at DESC"),
     sqlAll("SELECT * FROM day_captains ORDER BY event_date, captain_slot"),
     sqlAll("SELECT * FROM captain_feedback ORDER BY created_at DESC"),
@@ -1168,9 +646,6 @@ export async function exportAllData() {
   return {
     shifts,
     assignments,
-    onCall,
-    onCallShiftRequests,
-    interestedVolunteers,
     issues,
     dayCaptains,
     captainFeedback,

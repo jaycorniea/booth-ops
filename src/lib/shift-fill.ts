@@ -58,16 +58,3 @@ export function fillSlotsAriaLabel(
   const extra = extraCount > 0 ? `, plus ${extraCount} extra` : "";
   return `${formatFillPercent(percent)} of volunteer slots filled (${filled} of ${total}${extra})${scopeSuffix}`;
 }
-
-/** On-call backup depth — same green/yellow/red tones as slot-fill stoplights. */
-export function onCallBackupTone(count: number): FillPercentTone {
-  if (count >= 2) return "green";
-  if (count === 1) return "yellow";
-  return "red";
-}
-
-export const ON_CALL_CELL_TONE_CLASS: Record<FillPercentTone, string> = {
-  green: "bg-green-200 text-green-950",
-  yellow: "bg-yellow-200 text-yellow-950",
-  red: "bg-red-200 text-red-950",
-};

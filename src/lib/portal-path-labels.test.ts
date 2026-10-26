@@ -3,7 +3,7 @@ import { buildSessionJourney, formatPortalPath } from "./portal-path-labels";
 
 describe("formatPortalPath", () => {
   it("labels static routes", () => {
-    expect(formatPortalPath("/on-call")).toBe("On-call pool");
+    expect(formatPortalPath("/issues")).toBe("Issues");
     expect(formatPortalPath("/")).toBe("Home");
   });
 
@@ -17,11 +17,11 @@ describe("buildSessionJourney", () => {
   it("collapses consecutive duplicate paths", () => {
     const journey = buildSessionJourney([
       { path: "/" },
-      { path: "/on-call" },
-      { path: "/on-call" },
+      { path: "/issues" },
+      { path: "/issues" },
       { path: "/day/2026-08-29/roster" },
     ]);
-    expect(journey.breadcrumb).toBe("Home → On-call pool → Day (legacy roster) · Sat, Aug 29");
+    expect(journey.breadcrumb).toBe("Home → Issues → Day (legacy roster) · Sat, Aug 29");
     expect(journey.truncated).toBe(false);
   });
 });

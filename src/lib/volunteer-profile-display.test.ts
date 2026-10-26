@@ -14,20 +14,14 @@ function sampleProfile(overrides: Partial<VolunteerProfile> = {}): VolunteerProf
     email: "alex@example.com",
     roles: ["shift"],
     shiftSlots: [{ event_date: "2026-08-27", shift_num: 1, slot: "vol1" }],
-    interestedId: null,
-    onCallId: null,
-    interestedStatus: null,
-    onCallStatus: null,
     captainDates: [],
-    availabilitySummary: "",
-    source: "",
     ...overrides,
   };
 }
 
 describe("volunteer-profile-display", () => {
   it("compact roles join with middle dots", () => {
-    expect(profileRolesCompact(["shift", "on-call"])).toBe("Shift · On-call");
+    expect(profileRolesCompact(["shift", "day-captain"])).toBe("Shift · Captain");
   });
 
   it("summarizes single shift and captain dates", () => {
@@ -51,7 +45,7 @@ describe("volunteer-profile-display", () => {
   });
 
   it("shortens edit link labels for the glance table", () => {
-    expect(profileEditLinkShortLabel("Interested roster")).toBe("Interested");
     expect(profileEditLinkShortLabel("Day shifts")).toBe("Shifts");
+    expect(profileEditLinkShortLabel("Day Captain")).toBe("Captain");
   });
 });

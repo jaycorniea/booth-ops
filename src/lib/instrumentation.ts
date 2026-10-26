@@ -28,7 +28,7 @@ function authRoleFromCookieHeader(cookieHeader: string | null): AuthRole | null 
  * - mutationsToday by action — roster edits, tally saves, EOD submits
  * - navigation events (link, typed URL, entry) — Admin → Nav log
  * - page_views on /day/[date] during shift windows — captain engagement
- * - on_call.assign + shift.update_shift same session — no-show workflow
+ * - shift updates in the same session — no-show workflow
  * - export.* — admin activity spikes
  *
  * Do not log: passwords, full volunteer PII, issue body text (use ids/counts only).

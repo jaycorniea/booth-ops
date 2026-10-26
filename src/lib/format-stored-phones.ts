@@ -3,12 +3,8 @@ import {
   getSyncMetadata,
   listAllShifts,
   listDayCaptains,
-  listInterestedVolunteers,
-  listOnCall,
   setDayCaptain,
   setSyncMetadata,
-  updateInterestedVolunteer,
-  updateOnCall,
   updateShift,
 } from "./db";
 
@@ -25,8 +21,6 @@ export type PhoneFormatMigrationResult = {
   reason?: string;
   shifts: PhoneFormatTableStats;
   dayCaptains: PhoneFormatTableStats;
-  interestedVolunteers: PhoneFormatTableStats;
-  onCall: PhoneFormatTableStats;
 };
 
 function phoneUpdate(raw: string | null | undefined): { next: string; changed: boolean } {
@@ -48,8 +42,6 @@ export async function formatStoredPhonesInDb(options?: {
     skipped: false,
     shifts: { rowsScanned: 0, fieldsUpdated: 0 },
     dayCaptains: { rowsScanned: 0, fieldsUpdated: 0 },
-    interestedVolunteers: { rowsScanned: 0, fieldsUpdated: 0 },
-    onCall: { rowsScanned: 0, fieldsUpdated: 0 },
   };
 
   if (!force && !dryRun) {
@@ -94,30 +86,6 @@ export async function formatStoredPhonesInDb(options?: {
       phone.next,
       captain.email
     );
-  }
-
-  const interested = await listInterestedVolunteers();
-  for (const volunteer of interested) {
-    result.interestedVolunteers.rowsScanned++;
-    const phone = phoneUpdate(volunteer.phone);
-    if (!phone.changed) continue;
-
-    result.interestedVolunteers.fieldsUpdated++;
-    if (dryRun) continue;
-
-    await updateInterestedVolunteer(volunteer.id, { phone: phone.next });
-  }
-
-  const onCall = await listOnCall();
-  for (const volunteer of onCall) {
-    result.onCall.rowsScanned++;
-    const phone = phoneUpdate(volunteer.phone);
-    if (!phone.changed) continue;
-
-    result.onCall.fieldsUpdated++;
-    if (dryRun) continue;
-
-    await updateOnCall(volunteer.id, { phone: phone.next });
   }
 
   if (!dryRun) {

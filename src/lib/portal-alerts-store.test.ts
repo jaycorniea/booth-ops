@@ -39,7 +39,7 @@ describe("portal-alerts-store", () => {
 
     await sqlRun(
       `INSERT INTO audit_log (actor_role, entity_type, entity_id, operation, summary, changes, created_at)
-       VALUES ('admin', 'on_call', '1', 'create', 'Added Pat', '{}', ?)`,
+       VALUES ('admin', 'issue', '1', 'create', 'Added Pat', '{}', ?)`,
       [auditAt]
     );
 

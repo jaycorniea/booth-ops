@@ -17,13 +17,7 @@ function profile(
     email: "",
     roles: ["shift"],
     shiftSlots: [],
-    interestedId: null,
-    onCallId: null,
-    interestedStatus: null,
-    onCallStatus: null,
     captainDates: [] as VolunteerProfile["captainDates"],
-    availabilitySummary: "",
-    source: "",
     ...partial,
   };
 }

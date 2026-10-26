@@ -29,22 +29,3 @@ export function StoplightThresholdLegend({
     </span>
   );
 }
-
-export function OnCallBackupLegend() {
-  return (
-    <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
-      <span className="inline-flex items-center gap-1.5">
-        <StoplightDot tone="green" size="sm" />
-        <span>≥2</span>
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <StoplightDot tone="yellow" size="sm" />
-        <span>1</span>
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <StoplightDot tone="red" size="sm" />
-        <span>0</span>
-      </span>
-    </span>
-  );
-}

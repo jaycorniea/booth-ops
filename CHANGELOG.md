@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0
+
+- Remove the interested pool, the on-call pool, and the public signup pages that only fed those pools
+- Captains still type volunteers on the day sheet. Profiles, KPIs, alerts, and export no longer read those pools
+
 ## 0.1.1
 
 - **Portal log:** create `captain_ip_mappings` before the device index so a fresh local database does not 500 on page view

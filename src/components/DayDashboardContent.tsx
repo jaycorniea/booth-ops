@@ -1,6 +1,5 @@
 import { ChecklistToggle } from "@/components/ChecklistToggle";
 import { DayCaptainSections } from "@/components/DayCaptainSections";
-import { DayShiftOpsFillers } from "@/components/DayShiftOpsFillers";
 import { PrintButton } from "@/components/PrintButton";
 import { ShiftSlotsFillBar } from "@/components/ShiftSlotsFillBar";
 import { DayShiftVolunteerTable } from "@/components/DayShiftVolunteerTable";
@@ -200,8 +199,6 @@ export function DayDashboardContent({
         />
       </Card>
 
-      <DayShiftOpsFillers shifts={visibleShifts} eventDate={date} canWrite={write} />
-
       {write ? (
         <p className="text-sm text-slate-600">
           <Link href={`/day-log?date=${date}`} className="font-medium text-blue-700 underline">
@@ -234,16 +231,6 @@ export function DayDashboardContent({
             <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-700">
               <li>
                 <span className="font-medium text-slate-800">PI:</span> coordinator contact
-              </li>
-              <li>
-                <Link href="/interested" className="font-medium text-blue-700 underline">
-                  Interested
-                </Link>
-              </li>
-              <li>
-                <Link href="/on-call" className="font-medium text-blue-700 underline">
-                  On-Call
-                </Link>
               </li>
               <li>
                 <Link href="/resources" className="font-medium text-blue-700 underline">
@@ -337,7 +324,7 @@ export function DayDashboardContent({
                 shift at start
               </li>
               <li>Clicker: 1 click = words exchanged — start and end readings at shift change</li>
-              <li>No-show by T+15 min → call on-call list</li>
+              <li>No-show by T+15 min → call the coordinator</li>
               <li>Supplies → portal issue or the coordinator</li>
               <li>EOD: visitor count + shift status in portal</li>
             </ul>

@@ -1,28 +1,22 @@
 import { AdminLogNav } from "@/components/AdminLogNav";
-import { OnCallCoverageBar } from "@/components/OnCallCoverageBar";
-import { OnCallBackupLegend, StoplightThresholdLegend } from "@/components/StoplightLegend";
+import { StoplightThresholdLegend } from "@/components/StoplightLegend";
 import { DuringEventOperationsSection } from "@/components/DuringEventOperationsSection";
 import { CoverageCard, ShiftSlotsHistoryChart, StatTile } from "@/components/KpiWidgets";
 import { Card } from "@/components/ui";
 import { isAdmin } from "@/lib/auth";
 import { formatEventDate, getEventClose, getEventOpen } from "@/lib/event-dates";
-import { listOnCall } from "@/lib/db";
 import { getDataHygieneKpis } from "@/lib/data-hygiene";
 import { getDuringEventKpis, getPreEventKpis } from "@/lib/kpi";
-import { buildOnCallCoverageMatrix, summarizeOnCallCoverage } from "@/lib/on-call-matcher";
 import { centralDateString } from "@/lib/portal-time";
 import Link from "next/link";
 
 export default async function KpiPage() {
   const today = centralDateString();
-  const [admin, preEvent, duringEvent, hygiene, onCallCoverage] = await Promise.all([
+  const [admin, preEvent, duringEvent, hygiene] = await Promise.all([
     isAdmin(),
     getPreEventKpis(today),
     getDuringEventKpis(today),
     getDataHygieneKpis(),
-    listOnCall().then((volunteers) =>
-      summarizeOnCallCoverage(buildOnCallCoverageMatrix(volunteers))
-    ),
   ]);
 
   const phaseLabel =
@@ -57,29 +51,8 @@ export default async function KpiPage() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <StatTile
-            label="Active on-call pool"
-            value={preEvent.onCallActive}
-            hint="Approved or shift-requested"
-          />
-          <StatTile
-            label="Pending on-call applications"
-            value={preEvent.onCallPending}
-            hint="Awaiting admin approval"
-          />
           <StatTile label="Days until event opens" value={preEvent.daysUntilOpen} />
         </div>
-
-        <Card title="On-call backup coverage">
-          <p className="mb-3 text-sm text-slate-600">
-            Approved on-call pool per event-day shift — green ≥2 backups, yellow 1, red 0.
-          </p>
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-            <span className="font-medium text-slate-600">All event-day shifts</span>
-            <OnCallBackupLegend />
-          </div>
-          <OnCallCoverageBar summary={onCallCoverage} />
-        </Card>
 
         <Card title="Volunteer Recruitment">
           <ShiftSlotsHistoryChart history={preEvent.shiftSlotsHistory} />
@@ -90,24 +63,16 @@ export default async function KpiPage() {
         <div>
           <h3 className="text-lg font-semibold text-slate-900">Data hygiene</h3>
           <p className="text-sm text-slate-600">
-            Contact completeness across deduplicated volunteer profiles (shifts, on-call, interested,
-            Day Captains). Spot gaps on{" "}
+            Contact completeness across deduplicated volunteer profiles (shifts and Day Captains).
+            Spot gaps on{" "}
             <Link href="/volunteers" className="font-medium text-blue-700 underline">
               volunteer profiles
             </Link>
-            ; edit phone and email on the source roster —{" "}
-            <Link href="/interested" className="font-medium text-blue-700 underline">
-              Interested
-            </Link>
-            ,{" "}
-            <Link href="/on-call" className="font-medium text-blue-700 underline">
-              On-call
-            </Link>
-            , shift{" "}
+            ; edit phone and email on the shift{" "}
             <Link href="/schedule" className="font-medium text-blue-700 underline">
               rosters
-            </Link>
-            , or Day Captain forms on each event day page.
+            </Link>{" "}
+            or Day Captain forms on each event day page.
           </p>
         </div>
 
@@ -135,8 +100,8 @@ export default async function KpiPage() {
         <div>
           <h3 className="text-lg font-semibold text-slate-900">During the event</h3>
           <p className="text-sm text-slate-600">
-            Booth impact and day-of execution — visitors, roster attendance, on-call use,
-            and issues. Populates as Day Captains submit EOD reports.
+            Booth impact and day-of execution — visitors, roster attendance, and issues.
+            Populates as Day Captains submit EOD reports.
           </p>
         </div>
 

@@ -10,11 +10,7 @@ import {
   homePathForRole,
   isAdmin,
   setAuthenticated,
-  setOnCallSignupAccess,
-  setVolunteerSignupAccess,
-  verifyOnCallSignupPassword,
   verifyPassword,
-  verifyVolunteerSignupPassword,
 } from "../auth";
 import type { AuthRole } from "../auth-types";
 import {
@@ -31,30 +27,6 @@ import { ensureSessionIdCookie, getVisitorSessionId } from "../visitor-session";
 export async function loginAction(formData: FormData) {
   const password = String(formData.get("password") ?? "").trim();
   const { after } = await import("next/server");
-
-  // Public signup gates — not portal roles; unlock form + send applicant to the right page.
-  if (verifyOnCallSignupPassword(password)) {
-    await setOnCallSignupAccess();
-    after(async () => {
-      await logPortalEvent({
-        eventType: "auth",
-        action: "login_on_call_signup",
-        detail: { redirect: "/join-on-call" },
-      });
-    });
-    redirect("/join-on-call");
-  }
-  if (verifyVolunteerSignupPassword(password)) {
-    await setVolunteerSignupAccess();
-    after(async () => {
-      await logPortalEvent({
-        eventType: "auth",
-        action: "login_shift_signup",
-        detail: { redirect: "/join-shift" },
-      });
-    });
-    redirect("/join-shift");
-  }
 
   const role = verifyPassword(password);
 

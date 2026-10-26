@@ -1,5 +1,5 @@
 import { getCaptainSlotsForDate, hasAllDayCaptainsAssigned } from "./day-captain-slots";
-import { listAllShifts, listDayCaptains, listIssues, listOnCall } from "./db";
+import { listAllShifts, listDayCaptains, listIssues } from "./db";
 import {
   daysUntilEventOpen,
   getEventDates,
@@ -13,7 +13,6 @@ import {
   type ShiftSlotsDailyBar,
   type ShiftSlotsHistorySummary,
 } from "./shift-slots-history";
-import { ON_CALL_ACTIVE_STATUSES } from "./on-call-status";
 import { centralDateString } from "./portal-time";
 import { officialSlotsPerShift } from "./shift-slots";
 
@@ -33,8 +32,6 @@ export interface PreEventKpis {
   daysUntilOpen: number;
   captains: CoverageMetric;
   shiftSlots: CoverageMetric;
-  onCallActive: number;
-  onCallPending: number;
   shiftSlotsHistory: ShiftSlotsHistorySummary;
 }
 
@@ -43,7 +40,6 @@ export interface DuringEventKpis {
   totalEventDays: number;
   noShows: number;
   checkIns: number;
-  onCallDeployments: number;
   issuesOpen: number;
   issuesResolved: number;
 }
@@ -63,11 +59,7 @@ function elapsedEventDates(today: string): string[] {
 
 export async function getPreEventKpis(today = centralDateString()): Promise<PreEventKpis> {
   const eventDates = getEventDates();
-  const [shiftRows, captainRows, onCallList] = await Promise.all([
-    listAllShifts(),
-    listDayCaptains(),
-    listOnCall(),
-  ]);
+  const [shiftRows, captainRows] = await Promise.all([listAllShifts(), listDayCaptains()]);
 
   const shiftsByDate = new Map<string, typeof shiftRows>();
   for (const shift of shiftRows) {
@@ -104,7 +96,6 @@ export async function getPreEventKpis(today = centralDateString()): Promise<PreE
     slotsTotal += total;
   }
 
-  const activeOnCall = onCallList.filter((v) => ON_CALL_ACTIVE_STATUSES.includes(v.status));
   await refreshShiftSlotsKpiSnapshot(today);
   const shiftSlotsHistory = await buildShiftSlotsDailyHistory(today);
   const shiftCount = getShiftSchedule().length;
@@ -126,8 +117,6 @@ export async function getPreEventKpis(today = centralDateString()): Promise<PreE
       "Shift volunteer slots filled",
       `${slotsFilled} of ${slotsTotal} slots (${shiftCount} shifts × ${perShift} volunteers per day)`
     ),
-    onCallActive: activeOnCall.length,
-    onCallPending: onCallList.filter((v) => v.status === "new").length,
     shiftSlotsHistory,
   };
 }
@@ -143,7 +132,6 @@ export async function getDuringEventKpis(today = centralDateString()): Promise<D
     totalEventDays: eventDates.length,
     noShows: elapsedShifts.filter((s) => s.no_show === 1).length,
     checkIns: elapsedShifts.filter((s) => s.checked_in === 1).length,
-    onCallDeployments: 0,
     issuesOpen: issues.filter((i) => i.resolved === 0).length,
     issuesResolved: issues.filter((i) => i.resolved === 1).length,
   };

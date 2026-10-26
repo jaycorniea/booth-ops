@@ -2,7 +2,7 @@
 
 Operations portal for a multi-day volunteer booth. One deploy is one organization and one event season.
 
-Built for festival, information, and charity booths that need a shared roster, day captains, on-call backup, and public signup — without a spreadsheet as the source of truth.
+Built for festival, information, and charity booths that need a shared roster and day captains — without a spreadsheet as the source of truth.
 
 ## Features
 
@@ -12,8 +12,7 @@ Built for festival, information, and charity booths that need a shared roster, d
 - Day captains (full-day default; optional split days)
 - Lifecycle windows A/B/C/D from config dates, local times, and IANA timezone
 - Day dashboard: roster, check-in, no-show, captain fields
-- Schedule, interested volunteer pool, on-call pool
-- Public `/join`, `/join-shift`, `/join-on-call`
+- Schedule and volunteer profiles
 - Issues, captain feedback, fill KPIs
 - Admin UI for event dates, contact, booth name/location/hours
 
@@ -33,8 +32,6 @@ Local-only demo passwords (never use these in production):
 ADMIN_PASSWORD=admin-demo
 DAY_CAPTAIN_PASSWORD=captain-demo
 VOLUNTEER_PORTAL_PASSWORD=volunteer-demo
-ON_CALL_SIGNUP_PASSWORD=oncall-demo
-VOLUNTEER_SIGNUP_PASSWORD=shift-demo
 ```
 
 ```bash

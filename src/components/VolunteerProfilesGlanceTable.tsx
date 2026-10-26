@@ -19,11 +19,9 @@ import Link from "next/link";
 
 export function VolunteerProfilesGlanceTable({
   profiles,
-  write,
   showContact = true,
 }: {
   profiles: VolunteerProfile[];
-  write: boolean;
   showContact?: boolean;
 }) {
   if (profiles.length === 0) {
@@ -111,11 +109,7 @@ export function VolunteerProfilesGlanceTable({
                   <span className="line-clamp-2">{assignments}</span>
                 </td>
                 <td className="py-1.5 text-xs whitespace-nowrap">
-                  <VolunteerProfileEditMenu
-                    editLinks={editLinks}
-                    profile={profile}
-                    write={write}
-                  />
+                  <VolunteerProfileEditMenu editLinks={editLinks} />
                 </td>
               </tr>
             );

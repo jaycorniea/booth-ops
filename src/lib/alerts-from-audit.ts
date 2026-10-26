@@ -1,4 +1,4 @@
-import { parseAuditChanges, type AuditLogEntry, type FieldChange } from "./audit-log";
+import { parseAuditChanges, type AuditLogEntry } from "./audit-log";
 import type { PortalAlert } from "./alerts-types";
 import { dayDashboardHref } from "./day-routes";
 import {
@@ -30,35 +30,6 @@ function exposureSeverity(today: string, eventDate: string | null): PortalAlert[
   if (daysOut >= 0 && daysOut <= 2) return "high";
   if (daysOut >= 0 && daysOut <= 7) return "watch";
   return "watch";
-}
-
-function changeToString(change: FieldChange | undefined): string {
-  if (!change) return "";
-  if (change.to !== undefined && change.to !== null) return String(change.to);
-  return "";
-}
-
-function changeFromString(change: FieldChange | undefined): string {
-  if (!change) return "";
-  if (change.from !== undefined && change.from !== null) return String(change.from);
-  return "";
-}
-
-function onCallLeftPool(entry: AuditLogEntry): boolean {
-  if (entry.entity_type !== "on_call") return false;
-  if (entry.operation === "delete") return true;
-  if (entry.operation !== "update") return false;
-  const statusTo = changeToString(parseAuditChanges(entry.changes).status);
-  return statusTo === "withdrawn" || statusTo === "shift_assigned";
-}
-
-function onCallLabel(entry: AuditLogEntry): string {
-  const changes = parseAuditChanges(entry.changes);
-  return (
-    changeFromString(changes.name) ||
-    entry.summary.replace(/^Deleted on-call volunteer /, "").replace(/^Updated on-call volunteer /, "") ||
-    entry.entity_id
-  );
 }
 
 function parseEventShiftNum(raw: string): number | null {
@@ -97,34 +68,6 @@ export function alertsFromAuditEvents(
     if (entry.created_at < sinceUtc) continue;
     if (isE2eAuditEntry(entry)) continue;
 
-    if (entry.operation === "create" && entry.entity_type === "on_call") {
-      alerts.push({
-        id: `event:on_call_signup:${entry.id}`,
-        severity: "info",
-        category: "event.signup_on_call",
-        title: `On-call volunteer signed up · ${entry.summary || entry.entity_id}`,
-        detail: "New /join-on-call application recorded.",
-        href: "/on-call",
-        at: entry.created_at,
-        dedupeKey: `event:on_call_signup:${entry.id}`,
-      });
-      continue;
-    }
-
-    if (entry.operation === "create" && entry.entity_type === "interested_volunteer") {
-      alerts.push({
-        id: `event:interested_signup:${entry.id}`,
-        severity: "info",
-        category: "event.signup_interested",
-        title: `Shift volunteer signed up · ${entry.summary || entry.entity_id}`,
-        detail: "New shift signup recorded — review interested pool.",
-        href: "/interested",
-        at: entry.created_at,
-        dedupeKey: `event:interested_signup:${entry.id}`,
-      });
-      continue;
-    }
-
     if (entry.operation === "create" && entry.entity_type === "issue") {
       alerts.push({
         id: `event:issue:${entry.id}`,
@@ -135,26 +78,6 @@ export function alertsFromAuditEvents(
         href: "/issues",
         at: entry.created_at,
         dedupeKey: `event:issue:${entry.id}`,
-      });
-      continue;
-    }
-
-    if (onCallLeftPool(entry)) {
-      const label = onCallLabel(entry);
-      const changes = parseAuditChanges(entry.changes);
-      const detail =
-        entry.operation === "delete"
-          ? "Removed from the on-call pool."
-          : `Status ${changeFromString(changes.status).replace(/_/g, " ")} → ${changeToString(changes.status).replace(/_/g, " ")}.`;
-      alerts.push({
-        id: `event:on_call_left:${entry.id}`,
-        severity: "watch",
-        category: "event.on_call_left_pool",
-        title: `On-call volunteer left pool · ${label}`,
-        detail,
-        href: "/on-call",
-        at: entry.created_at,
-        dedupeKey: `event:on_call_left:${entry.id}`,
       });
       continue;
     }

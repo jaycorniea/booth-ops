@@ -3,13 +3,10 @@ import {
   AUTH_SESSION_MAX_AGE_SECONDS,
   getAdminPassword,
   getDayCaptainPassword,
-  getOnCallSignupPassword,
   getReadOnlyPassword,
   getVolunteerPortalPassword,
-  getVolunteerSignupPassword,
   homePathForRole,
   verifyPassword,
-  verifyVolunteerSignupPassword,
 } from "./auth";
 
 const ENV_KEYS = [
@@ -17,8 +14,6 @@ const ENV_KEYS = [
   "ADMIN_PASSWORD",
   "READ_ONLY_PASSWORD",
   "VOLUNTEER_PORTAL_PASSWORD",
-  "ON_CALL_SIGNUP_PASSWORD",
-  "VOLUNTEER_SIGNUP_PASSWORD",
 ] as const;
 
 describe("auth passwords", () => {
@@ -47,8 +42,6 @@ describe("auth passwords", () => {
     expect(getAdminPassword()).toBe("");
     expect(getReadOnlyPassword()).toBe("");
     expect(getVolunteerPortalPassword()).toBe("");
-    expect(getOnCallSignupPassword()).toBe("");
-    expect(getVolunteerSignupPassword()).toBe("");
     expect(verifyPassword("admin-demo")).toBeNull();
   });
 
@@ -57,14 +50,12 @@ describe("auth passwords", () => {
     process.env.ADMIN_PASSWORD = "admin-demo";
     process.env.READ_ONLY_PASSWORD = "viewer-demo";
     process.env.VOLUNTEER_PORTAL_PASSWORD = "volunteer-demo";
-    process.env.ON_CALL_SIGNUP_PASSWORD = "oncall-demo";
-    process.env.VOLUNTEER_SIGNUP_PASSWORD = "shift-demo";
 
     expect(getDayCaptainPassword()).toBe("captain-demo");
     expect(getAdminPassword()).toBe("admin-demo");
     expect(verifyPassword("admin-demo")).toBe("admin");
     expect(verifyPassword("captain-demo")).toBe("captain");
-    expect(verifyVolunteerSignupPassword("shift-demo")).toBe(true);
+    expect(getVolunteerPortalPassword()).toBe("volunteer-demo");
   });
 
   it("routes volunteers and viewers to /volunteer", () => {

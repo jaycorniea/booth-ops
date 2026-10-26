@@ -64,8 +64,6 @@ export function getCaptainNavLinks(): CaptainNavEntry[] {
     { href: "/", label: "Home", home: true },
     { href: "/schedule", label: "Schedule" },
     { href: "/volunteers", label: "Profiles" },
-    { href: "/interested", label: "Interested" },
-    { href: "/on-call", label: "On-call" },
     { kind: "captain-more-menu", label: CAPTAIN_MORE_NAV_LABEL },
   ];
 }

@@ -83,14 +83,6 @@ export async function purgeE2eArtifacts(): Promise<void> {
       `UPDATE shift_assignments SET name = '', phone = '', email = ''
        WHERE name GLOB 'E2E *' OR LOWER(email) GLOB '*e2e*@example.com'`
     );
-    await sqlRun(
-      `DELETE FROM interested_volunteers
-       WHERE name GLOB 'E2E *' OR LOWER(email) GLOB '*e2e*@example.com'`
-    );
-    await sqlRun(
-      `DELETE FROM on_call
-       WHERE name GLOB 'E2E *' OR LOWER(email) GLOB '*e2e*@example.com'`
-    );
   } catch {
     /* tables may not exist yet */
   }

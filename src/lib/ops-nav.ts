@@ -48,8 +48,6 @@ const ADMIN_LINKS: OpsNavEntry[] = [
   { href: "/", label: "Home", home: true },
   { href: "/schedule", label: "Schedule" },
   { href: "/volunteers", label: "Profiles" },
-  { href: "/interested", label: "Interested" },
-  { href: "/on-call", label: "On-call" },
   { href: "/kpi", label: "KPIs" },
   { href: "/feedback", label: "Feedback" },
 ];

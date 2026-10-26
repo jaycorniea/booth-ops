@@ -13,18 +13,9 @@ import {
 } from "@/lib/captain-picked-day";
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC = [
-  "/login",
-  "/join",
-  "/join-on-call",
-  "/join-shift",
-  "/api/health",
-];
+const PUBLIC = ["/login", "/api/health"];
 const ADMIN_ONLY = ["/alerts", "/portal-log", "/captain-ips", "/event-settings"];
-const WRITE_API = [
-  "/api/on-call/assign",
-  "/api/interested/assign",
-];
+const WRITE_API: string[] = [];
 const VOLUNTEER_ALLOWED_PREFIXES = [
   "/volunteer",
   "/schedule",
@@ -73,9 +64,6 @@ export function proxy(request: NextRequest) {
   const role = getAuthRole(request);
   const portalAsOf = portalAsOfFromRequest(request);
   if (!role) {
-    if (pathname === "/volunteer" || pathname.startsWith("/volunteer/")) {
-      return NextResponse.redirect(new URL("/join", request.url));
-    }
     const login = new URL("/login", request.url);
     login.searchParams.set("from", pathname);
     return NextResponse.redirect(login);

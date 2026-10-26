@@ -1,21 +1,9 @@
 import { type CaptainSlot, isSplitCaptainDay } from "./day-captain-slots";
 import { dayDashboardHref } from "./day-routes";
-import {
-  formatEventDate,
-  getEventDates,
-  getShiftSchedule,
-} from "./event-dates";
-import {
-  getDayCaptains,
-  getShiftsForDate,
-  listInterestedVolunteers,
-  listOnCall,
-  type InterestedVolunteerStatus,
-} from "./db";
-import { ON_CALL_STATUS_LABELS, type OnCallVolunteerStatus } from "./on-call-status";
-import { splitAvailability } from "./on-call-form";
+import { getEventDates } from "./event-dates";
+import { getDayCaptains, getShiftsForDate } from "./db";
 
-export type VolunteerRole = "shift" | "setup" | "interested" | "on-call" | "day-captain";
+export type VolunteerRole = "shift" | "setup" | "day-captain";
 
 export interface VolunteerCaptainAssignment {
   event_date: string;
@@ -35,13 +23,7 @@ export interface VolunteerProfile {
   email: string;
   roles: VolunteerRole[];
   shiftSlots: VolunteerShiftSlot[];
-  interestedId: number | null;
-  onCallId: number | null;
-  interestedStatus: string | null;
-  onCallStatus: OnCallVolunteerStatus | null;
   captainDates: VolunteerCaptainAssignment[];
-  availabilitySummary: string;
-  source: string;
 }
 
 function normPhone(phone: string): string {
@@ -64,19 +46,6 @@ function profileKey(name: string, phone: string, email: string): string {
   return volunteerContactKey(name, phone, email);
 }
 
-/** Placed interested pool → day sheet, even if the shift row lost the name. */
-export function placedInterestedShiftSlot(volunteer: {
-  status: string;
-  placed_event_date?: string | null;
-  placed_shift_num?: number | null;
-}): VolunteerShiftSlot | null {
-  if (volunteer.status !== "placed") return null;
-  const date = volunteer.placed_event_date?.trim() ?? "";
-  const shiftNum = volunteer.placed_shift_num;
-  if (!date || shiftNum == null || !Number.isFinite(shiftNum) || shiftNum < 1) return null;
-  return { event_date: date, shift_num: shiftNum, slot: "slot_1" };
-}
-
 export function mergeShiftSlots(
   existing: VolunteerShiftSlot[],
   added: VolunteerShiftSlot[]
@@ -90,32 +59,9 @@ export function mergeShiftSlots(
   return out;
 }
 
-function summarizeAvailability(
-  availableDates: string,
-  availableShifts: string,
-  extra?: string
-): string {
-  const dates = splitAvailability(availableDates);
-  const shifts = splitAvailability(availableShifts);
-  const dateLabel = dates.includes("any")
-    ? "Any event day"
-    : dates.map((d) => formatEventDate(d)).join(", ");
-  const shiftLabel = shifts.includes("any")
-    ? "Any shift"
-    : shifts
-        .map((s) => getShiftSchedule().find((x) => x.num === Number(s))?.label ?? s)
-        .join(", ");
-  const extraLabel = extra?.trim() ? ` · ${extra.trim()}` : "";
-  return `${dateLabel} · ${shiftLabel}${extraLabel}`;
-}
-
 export async function listVolunteerProfiles(): Promise<VolunteerProfile[]> {
   const scheduleDates = getEventDates();
-  const [shiftGroups, interested, onCall] = await Promise.all([
-    Promise.all(scheduleDates.map((d) => getShiftsForDate(d))),
-    listInterestedVolunteers(),
-    listOnCall(),
-  ]);
+  const shiftGroups = await Promise.all(scheduleDates.map((d) => getShiftsForDate(d)));
   const shifts = shiftGroups.flat();
 
   const captains = (await Promise.all(getEventDates().map((d) => getDayCaptains(d)))).flat();
@@ -140,22 +86,15 @@ export async function listVolunteerProfiles(): Promise<VolunteerProfile[]> {
       email: email.trim() || existing?.email || "",
       roles: [...roles],
       shiftSlots: mergeShiftSlots(existing?.shiftSlots ?? [], patch.shiftSlots ?? []),
-      interestedId: patch.interestedId ?? existing?.interestedId ?? null,
-      onCallId: patch.onCallId ?? existing?.onCallId ?? null,
-      interestedStatus: patch.interestedStatus ?? existing?.interestedStatus ?? null,
-      onCallStatus: patch.onCallStatus ?? existing?.onCallStatus ?? null,
       captainDates: [...(existing?.captainDates ?? []), ...(patch.captainDates ?? [])],
-      availabilitySummary: patch.availabilitySummary || existing?.availabilitySummary || "",
-      source: patch.source || existing?.source || "",
     });
   }
 
   for (const shift of shifts) {
-    const role: VolunteerRole = "shift";
     for (const volunteer of shift.volunteers) {
       if (!volunteer.name.trim()) continue;
       upsert(volunteer.name, volunteer.phone, volunteer.email, {
-        roles: [role],
+        roles: ["shift"],
         shiftSlots: [
           {
             event_date: shift.event_date,
@@ -165,43 +104,6 @@ export async function listVolunteerProfiles(): Promise<VolunteerProfile[]> {
         ],
       });
     }
-  }
-
-  for (const v of interested) {
-    const placedSlot = placedInterestedShiftSlot(v);
-    upsert(v.name, v.phone, v.email, {
-      roles: [
-        ...(showsInterestedPlanningRole(v.status) ? (["interested"] as VolunteerRole[]) : []),
-        ...(placedSlot ? (["shift"] as VolunteerRole[]) : []),
-      ],
-      ...(placedSlot ? { shiftSlots: [placedSlot] } : {}),
-      interestedId: v.id,
-      interestedStatus: v.status,
-      ...(showsInterestedPlanningRole(v.status)
-        ? {
-            availabilitySummary: summarizeAvailability(
-              v.available_dates,
-              v.available_shifts,
-              v.notes
-            ),
-            source: v.source,
-          }
-        : {}),
-    });
-  }
-
-  for (const v of onCall) {
-    upsert(v.name, v.phone, v.email, {
-      roles: ["on-call"],
-      onCallId: v.id,
-      onCallStatus: v.status,
-      availabilitySummary: summarizeAvailability(
-        v.available_dates,
-        v.available_shifts,
-        v.availability
-      ),
-      source: ON_CALL_STATUS_LABELS[v.status],
-    });
   }
 
   for (const captain of captains) {
@@ -216,11 +118,6 @@ export async function listVolunteerProfiles(): Promise<VolunteerProfile[]> {
 }
 
 export const PROFILE_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-
-/** Planning-pool badge only while still awaiting shift assignment. */
-export function showsInterestedPlanningRole(status: InterestedVolunteerStatus): boolean {
-  return status === "interested";
-}
 
 /** First A–Z letter in a profile name for alphabet navigation. */
 export function profileNameSortLetter(name: string): string {
@@ -271,13 +168,10 @@ function captainDashboardHref(assignment: VolunteerCaptainAssignment): string {
 
 /**
  * Most relevant operational destination for a profile name click.
- * Priority: Day Captain → scheduled shift → on-call pool → interested roster.
+ * Priority: Day Captain, then scheduled shift.
  */
 export function volunteerProfilePrimaryUsageLink(
-  profile: Pick<
-    VolunteerProfile,
-    "onCallId" | "interestedId" | "shiftSlots" | "captainDates"
-  >
+  profile: Pick<VolunteerProfile, "shiftSlots" | "captainDates">
 ): VolunteerProfileEditLink | null {
   if (profile.captainDates.length > 0) {
     return {
@@ -291,27 +185,12 @@ export function volunteerProfilePrimaryUsageLink(
       label: "Day shifts",
     };
   }
-  if (profile.onCallId != null) {
-    return {
-      href: `/on-call#on-call-${profile.onCallId}`,
-      label: "On-call pool",
-    };
-  }
-  if (profile.interestedId != null) {
-    return {
-      href: `/interested#interested-${profile.interestedId}`,
-      label: "Interested roster",
-    };
-  }
   return null;
 }
 
 /** Where phone/email can be updated for this deduped profile (profiles page is read-only). */
 export function volunteerProfileContactEditLinks(
-  profile: Pick<
-    VolunteerProfile,
-    "onCallId" | "interestedId" | "shiftSlots" | "captainDates"
-  >
+  profile: Pick<VolunteerProfile, "shiftSlots" | "captainDates">
 ): VolunteerProfileEditLink[] {
   const links: VolunteerProfileEditLink[] = [];
   const seen = new Set<string>();
@@ -322,12 +201,6 @@ export function volunteerProfileContactEditLinks(
     links.push({ href, label });
   }
 
-  if (profile.onCallId != null) {
-    add(`/on-call#on-call-${profile.onCallId}`, "On-call pool");
-  }
-  if (profile.interestedId != null) {
-    add(`/interested#interested-${profile.interestedId}`, "Interested roster");
-  }
   if (profile.shiftSlots.length > 0) {
     add(shiftDashboardHref(profile.shiftSlots[0]), "Day shifts");
   }
@@ -344,10 +217,6 @@ export function roleLabel(role: VolunteerRole): string {
       return "Setup team";
     case "shift":
       return "Shift volunteer";
-    case "interested":
-      return "Interested";
-    case "on-call":
-      return "On-call backup";
     case "day-captain":
       return "Day Captain";
   }

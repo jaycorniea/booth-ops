@@ -13,16 +13,11 @@ export const ADMIN_SHELL_COOKIE = "booth_portal_admin_shell";
 const LEGACY_CAPTAIN_DATE_COOKIE = "booth_portal_captain_date";
 
 export const AUTH_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24;
-export const ON_CALL_SIGNUP_GATE_COOKIE = "on_call_signup_gate";
-export const SHIFT_SIGNUP_GATE_COOKIE = "shift_signup_gate";
-export const VOLUNTEER_SIGNUP_GATE_COOKIE = "volunteer_signup_gate";
 
 const REQUIRED_PRODUCTION_PASSWORDS = [
   "ADMIN_PASSWORD",
   "DAY_CAPTAIN_PASSWORD",
   "VOLUNTEER_PORTAL_PASSWORD",
-  "ON_CALL_SIGNUP_PASSWORD",
-  "VOLUNTEER_SIGNUP_PASSWORD",
 ] as const;
 
 function envPassword(keys: string[]): string {
@@ -60,92 +55,6 @@ export function getReadOnlyPassword(): string {
 
 export function getVolunteerPortalPassword(): string {
   return envPassword(["VOLUNTEER_PORTAL_PASSWORD", "VOLUNTEER_PASSWORD"]);
-}
-
-export function getOnCallSignupPassword(): string {
-  return envPassword(["ON_CALL_SIGNUP_PASSWORD", "PORTAL_ON_CALL_SIGNUP_PASSWORD"]);
-}
-
-export function getVolunteerSignupPassword(): string {
-  return envPassword([
-    "VOLUNTEER_SIGNUP_PASSWORD",
-    "SHIFT_SIGNUP_PASSWORD",
-    "PORTAL_SHIFT_SIGNUP_PASSWORD",
-  ]);
-}
-
-export function getShiftSignupPassword(): string {
-  return getVolunteerSignupPassword();
-}
-
-export function verifyOnCallSignupPassword(input: string): boolean {
-  const expected = getOnCallSignupPassword();
-  return Boolean(expected) && input.trim() === expected;
-}
-
-export function verifyVolunteerSignupPassword(input: string): boolean {
-  const expected = getVolunteerSignupPassword();
-  return Boolean(expected) && input.trim() === expected;
-}
-
-export function verifyOnCallSignupOrPortalPassword(input: string): boolean {
-  if (verifyOnCallSignupPassword(input)) return true;
-  const role = verifyPassword(input.trim());
-  return role === "admin" || role === "captain";
-}
-
-export function verifyVolunteerSignupOrPortalPassword(input: string): boolean {
-  if (verifyVolunteerSignupPassword(input)) return true;
-  const role = verifyPassword(input.trim());
-  return role === "admin" || role === "captain";
-}
-
-export function verifyShiftSignupPassword(input: string): boolean {
-  return verifyVolunteerSignupPassword(input);
-}
-
-export async function hasOnCallSignupAccess(): Promise<boolean> {
-  const jar = await cookies();
-  return jar.get(ON_CALL_SIGNUP_GATE_COOKIE)?.value === "1";
-}
-
-export async function hasVolunteerSignupAccess(): Promise<boolean> {
-  if (await canWrite()) return true;
-  const jar = await cookies();
-  return jar.get(VOLUNTEER_SIGNUP_GATE_COOKIE)?.value === "1";
-}
-
-export async function hasShiftSignupAccess(): Promise<boolean> {
-  return (
-    (await hasVolunteerSignupAccess()) ||
-    (await cookies()).get(SHIFT_SIGNUP_GATE_COOKIE)?.value === "1"
-  );
-}
-
-export async function setOnCallSignupAccess(): Promise<void> {
-  const jar = await cookies();
-  jar.set(ON_CALL_SIGNUP_GATE_COOKIE, "1", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24,
-    path: "/join-on-call",
-  });
-}
-
-export async function setVolunteerSignupAccess(): Promise<void> {
-  const jar = await cookies();
-  jar.set(VOLUNTEER_SIGNUP_GATE_COOKIE, "1", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24,
-    path: "/join-shift",
-  });
-}
-
-export async function setShiftSignupAccess(): Promise<void> {
-  await setVolunteerSignupAccess();
 }
 
 export async function getAuthRole(): Promise<AuthRole | null> {

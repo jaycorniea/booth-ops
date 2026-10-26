@@ -1,5 +1,4 @@
 import type { CaptainSlot } from "../day-captain-slots";
-import type { OnCallVolunteerStatus } from "../on-call-status";
 
 export interface ShiftVolunteer {
   slot_index: number;
@@ -16,49 +15,6 @@ export interface Shift {
   checked_in: number;
   no_show: number;
   notes: string;
-}
-
-export type { OnCallVolunteerStatus } from "../on-call-status";
-
-export interface OnCallVolunteer {
-  id: number;
-  name: string;
-  phone: string;
-  email: string;
-  availability: string;
-  notice_minutes: number;
-  available_dates: string;
-  available_shifts: string;
-  bilingual: number;
-  last_contacted: string;
-  contacted_event_date: string;
-  contacted_shift_num: number | null;
-  pending_shift_requests?: import("../on-call-shift-requests").OnCallShiftRequest[];
-  status: OnCallVolunteerStatus;
-  placed_event_date: string;
-  placed_shift_num: number | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export type InterestedVolunteerStatus = "interested" | "placed" | "withdrawn";
-
-export interface InterestedVolunteer {
-  id: number;
-  name: string;
-  phone: string;
-  email: string;
-  notes: string;
-  source: string;
-  available_dates: string;
-  available_shifts: string;
-  bilingual: number;
-  status: InterestedVolunteerStatus;
-  placed_event_date: string;
-  placed_shift_num: number | null;
-  last_contacted: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Issue {

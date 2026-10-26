@@ -9,8 +9,6 @@ import {
   setChecklistItem,
   setDayCaptain,
   updateShift,
-  unplaceInterestedMissingFromShift,
-  placeInterestedPresentOnShift,
   type ShiftVolunteer,
 } from "../db";
 import { requireWriteAccess } from "../auth";
@@ -60,10 +58,6 @@ async function persistShiftUpdate(
   if (!before) return;
   await updateShift(id, patch);
   const after = await getShiftById(id);
-  if (after) {
-    await unplaceInterestedMissingFromShift(after);
-    await placeInterestedPresentOnShift(after);
-  }
   await recordAudit({
     entityType: "shift",
     entityId: id,
@@ -86,7 +80,6 @@ async function persistShiftUpdate(
   revalidateDayDashboard(eventDate);
   revalidatePath("/schedule");
   revalidatePath("/volunteers");
-  revalidatePath("/interested");
   await notifyPortalDataChanged();
   void refreshShiftSlotsKpiSnapshot();
 }

@@ -127,8 +127,7 @@ export default async function CaptainAddVolunteerHowToPage() {
             row.
           </li>
           <li>
-            <strong>No-show or last-minute gap:</strong> do not assign from interested/on-call
-            yourself — call the coordinator for backup.
+            <strong>No-show or last-minute gap:</strong> call the coordinator for backup.
           </li>
         </ul>
       </Card>

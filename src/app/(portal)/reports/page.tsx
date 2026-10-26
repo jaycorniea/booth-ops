@@ -15,8 +15,7 @@ export default async function ReportsPage() {
           tables and fill KPIs.
         </p>
         <p className="mt-2 text-sm text-slate-700">
-          {data.shifts.length} shifts · {data.interestedVolunteers.length} interested ·{" "}
-          {data.onCall.length} on-call · {data.issues.length} issues
+          {data.shifts.length} shifts · {data.issues.length} issues
         </p>
       </Card>
     </div>

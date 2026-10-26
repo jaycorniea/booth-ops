@@ -3,9 +3,6 @@ export type PortalAlertSeverity = "critical" | "high" | "watch" | "info";
 export type PortalAlertCategory =
   | "event.shift_slot_opened"
   | "event.no_show"
-  | "event.on_call_left_pool"
-  | "event.signup_on_call"
-  | "event.signup_interested"
   | "event.issue_logged";
 
 export interface PortalAlert {

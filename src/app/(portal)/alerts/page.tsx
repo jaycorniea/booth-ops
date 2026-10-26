@@ -37,7 +37,7 @@ export default async function AlertsPage({
           <h2 className="text-2xl font-bold">Alerts</h2>
           <p className="text-sm text-slate-600">
             <strong>Events only</strong> — stored alerts from the last 7 days (synced from audit log).
-            Shift slot opened up, on-call volunteer left pool, signup, no-show. Times use{" "}
+            Shift slot opened up, no-show, and new issues. Times use{" "}
             {PORTAL_TIME_ZONE_LABEL}. Clearing alerts does not touch Portal log.
           </p>
           {cleared ? (
