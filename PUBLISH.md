@@ -1,9 +1,5 @@
 # Publish
 
-Do not create a public GitHub repo until the operator asks.
+Public repo: https://github.com/jaycorniea/booth-ops
 
-```bash
-gh repo create booth-ops --public --source . --remote origin
-```
-
-Suggested topics: `volunteer`, `nextjs`, `booth`.
+Topics: `volunteer`, `nextjs`, `booth`.

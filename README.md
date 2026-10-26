@@ -67,10 +67,6 @@ MIT. See [LICENSE](LICENSE).
 
 ## Publish
 
-Do not publish until the operator asks. Suggested:
-
-```bash
-gh repo create booth-ops --public --source . --remote origin
-```
+Public repo: https://github.com/jaycorniea/booth-ops
 
 Topics: `volunteer`, `nextjs`, `booth`.
