@@ -13,7 +13,7 @@ Built for festival, information, and charity booths that need a shared roster an
 - Lifecycle windows A/B/C/D from config dates, local times, and IANA timezone
 - Day dashboard: roster, check-in, no-show, captain fields
 - Schedule and volunteer profiles
-- Issues, captain feedback, fill KPIs
+- Fill KPIs
 - Admin UI for event dates, contact, booth name/location/hours
 
 Demo seed: **Riverside Arts Weekend** (3 days, 3 shifts, 3 official volunteers per shift).

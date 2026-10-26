@@ -38,11 +38,10 @@ export function DuringEventOperationsSection({
   void eventOpenDate;
   return (
     <KpiGroup title="Booth operations" subtitle={pending ? "Available once the booth is live" : undefined}>
-      <div className={`grid gap-3 sm:grid-cols-2 lg:grid-cols-4 ${pendingCardClass(pending)}`}>
+      <div className={`grid gap-3 sm:grid-cols-3 ${pendingCardClass(pending)}`}>
         <StatTile label="Elapsed days" value={`${kpis.elapsedDays} / ${kpis.totalEventDays}`} />
         <StatTile label="Check-ins" value={kpis.checkIns} />
         <StatTile label="No-shows" value={kpis.noShows} />
-        <StatTile label="Open issues" value={kpis.issuesOpen} />
       </div>
     </KpiGroup>
   );

@@ -10,7 +10,6 @@ import { type CaptainSlot, hasAllDayCaptainsAssigned } from "@/lib/day-captain-s
 import {
   formatEventDayCard,
   getEventDates,
-  isCaptainFeedbackOpen,
   UNASSIGNED_CAPTAIN_DAY_CLASS,
 } from "@/lib/event-dates";
 import { getAuthRole } from "@/lib/auth";
@@ -115,7 +114,6 @@ export default async function HomePage({
       },
     ];
   });
-  const feedbackOpen = isCaptainFeedbackOpen(portalAsOf);
   const eventSettings = getActiveEventSettings();
   const totalSlotFill = dayCards.reduce(
     (acc, { slotFill }) => ({
@@ -250,15 +248,6 @@ export default async function HomePage({
         })}
       </div>
         </>
-      )}
-
-      {feedbackOpen && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          <strong>Share your thoughts on the portal</strong>.{" "}
-          <Link href="/feedback" className="font-medium text-blue-800 underline">
-            Leave feedback →
-          </Link>
-        </div>
       )}
 
     </div>

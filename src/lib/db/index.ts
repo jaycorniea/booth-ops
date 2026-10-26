@@ -15,9 +15,7 @@ import {
 import { padVolunteers } from "../shift-slots";
 import { getActiveEventSettings } from "../event-settings";
 import type {
-  CaptainFeedback,
   DayCaptainRow,
-  Issue,
   Shift,
   ShiftVolunteer,
 } from "./types";
@@ -141,18 +139,6 @@ const SCHEMA_SQL = `
     PRIMARY KEY (event_date, captain_slot)
   );
 
-  CREATE TABLE IF NOT EXISTS issues (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    event_date TEXT NOT NULL,
-    shift TEXT DEFAULT '',
-    category TEXT NOT NULL DEFAULT 'visitor',
-    description TEXT NOT NULL,
-    resolved INTEGER NOT NULL DEFAULT 0,
-    admin_response TEXT DEFAULT '',
-    admin_response_at TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
   CREATE TABLE IF NOT EXISTS checklist_state (
     event_date TEXT NOT NULL,
     checklist_key TEXT NOT NULL,
@@ -164,19 +150,6 @@ const SCHEMA_SQL = `
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL,
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS captain_feedback (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT DEFAULT '',
-    email TEXT DEFAULT '',
-    event_date TEXT DEFAULT '',
-    category TEXT NOT NULL DEFAULT 'general',
-    portal_rating INTEGER,
-    comments TEXT NOT NULL,
-    admin_response TEXT DEFAULT '',
-    admin_response_at TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
   CREATE TABLE IF NOT EXISTS kpi_snapshots (
@@ -521,85 +494,6 @@ export async function setDayCaptain(
   );
 }
 
-export async function getIssueById(id: number): Promise<Issue | undefined> {
-  await dbReady();
-  return sqlGet<Issue>("SELECT * FROM issues WHERE id = ?", [id]);
-}
-
-export async function listIssues(eventDate?: string): Promise<Issue[]> {
-  await dbReady();
-  return eventDate
-    ? sqlAll<Issue>("SELECT * FROM issues WHERE event_date = ? ORDER BY created_at DESC", [eventDate])
-    : sqlAll<Issue>("SELECT * FROM issues ORDER BY created_at DESC");
-}
-
-export async function addIssue(issue: {
-  event_date: string;
-  shift?: string;
-  category?: string;
-  description: string;
-}) {
-  await dbReady();
-  await sqlRun(
-    `INSERT INTO issues (event_date, shift, category, description) VALUES (?, ?, ?, ?)`,
-    [issue.event_date, issue.shift ?? "", issue.category ?? "visitor", issue.description]
-  );
-}
-
-export async function resolveIssue(id: number) {
-  await dbReady();
-  await sqlRun("UPDATE issues SET resolved = 1 WHERE id = ?", [id]);
-}
-
-export async function setIssueResponse(id: number, adminResponse: string): Promise<void> {
-  await dbReady();
-  await sqlRun(
-    `UPDATE issues SET admin_response = ?, admin_response_at = datetime('now') WHERE id = ?`,
-    [adminResponse, id]
-  );
-}
-
-export async function listCaptainFeedback(): Promise<CaptainFeedback[]> {
-  await dbReady();
-  return sqlAll<CaptainFeedback>("SELECT * FROM captain_feedback ORDER BY created_at DESC");
-}
-
-export async function addCaptainFeedback(feedback: {
-  name?: string;
-  email?: string;
-  event_date?: string;
-  category?: string;
-  portal_rating?: number | null;
-  comments: string;
-}) {
-  await dbReady();
-  await sqlRun(
-    `INSERT INTO captain_feedback (name, email, event_date, category, portal_rating, comments)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [
-      feedback.name ?? "",
-      feedback.email ?? "",
-      feedback.event_date ?? "",
-      feedback.category ?? "general",
-      feedback.portal_rating ?? null,
-      feedback.comments,
-    ]
-  );
-}
-
-export async function getCaptainFeedbackById(id: number): Promise<CaptainFeedback | undefined> {
-  await dbReady();
-  return sqlGet<CaptainFeedback>("SELECT * FROM captain_feedback WHERE id = ?", [id]);
-}
-
-export async function setCaptainFeedbackResponse(id: number, adminResponse: string): Promise<void> {
-  await dbReady();
-  await sqlRun(
-    `UPDATE captain_feedback SET admin_response = ?, admin_response_at = datetime('now') WHERE id = ?`,
-    [adminResponse, id]
-  );
-}
-
 export async function getChecklist(eventDate: string): Promise<Record<string, boolean>> {
   await dbReady();
   const rows = await sqlAll<{ checklist_key: string; checked: number }>(
@@ -627,18 +521,14 @@ export async function exportAllData() {
   const [
     shifts,
     assignments,
-    issues,
     dayCaptains,
-    captainFeedback,
     portalSessions,
     portalEvents,
     auditLog,
   ] = await Promise.all([
     sqlAll("SELECT * FROM shifts ORDER BY event_date, shift_num"),
     sqlAll("SELECT * FROM shift_assignments ORDER BY shift_id, slot_index"),
-    sqlAll("SELECT * FROM issues ORDER BY created_at DESC"),
     sqlAll("SELECT * FROM day_captains ORDER BY event_date, captain_slot"),
-    sqlAll("SELECT * FROM captain_feedback ORDER BY created_at DESC"),
     listPortalSessionsForExport(),
     listPortalEventsForExport(),
     listAuditLog(10_000),
@@ -646,9 +536,7 @@ export async function exportAllData() {
   return {
     shifts,
     assignments,
-    issues,
     dayCaptains,
-    captainFeedback,
     portalSessions,
     portalEvents,
     auditLog,

@@ -8,8 +8,6 @@ Hub key: `event_date` (ISO `YYYY-MM-DD`).
 | `shifts` | Unique `(event_date, shift_num)`. Notes, check-in, no-show. |
 | `shift_assignments` | Unique `(shift_id, slot_index)`. `slot_index` is 1..N. Name, phone, email. |
 | `day_captains` | Unique `(event_date, captain_slot)`. |
-| `issues` | Day issues + admin response. |
-| `captain_feedback` | Pre-event feedback + admin response. |
 | `audit_log` | Mutations. |
 | `kpi_snapshots` | Fill KPI history. |
 | `checklist_state` | Opening/closing checklist. |

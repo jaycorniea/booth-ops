@@ -68,20 +68,6 @@ export function alertsFromAuditEvents(
     if (entry.created_at < sinceUtc) continue;
     if (isE2eAuditEntry(entry)) continue;
 
-    if (entry.operation === "create" && entry.entity_type === "issue") {
-      alerts.push({
-        id: `event:issue:${entry.id}`,
-        severity: exposureSeverity(today, entry.event_date),
-        category: "event.issue_logged",
-        title: `Issue logged · ${entry.event_date ? formatEventDate(entry.event_date) : "event week"}`,
-        detail: entry.summary || "New event-week issue submitted.",
-        href: "/issues",
-        at: entry.created_at,
-        dedupeKey: `event:issue:${entry.id}`,
-      });
-      continue;
-    }
-
     if (entry.entity_type !== "shift" || entry.operation !== "update") continue;
 
     const changes = parseAuditChanges(entry.changes);

@@ -17,8 +17,6 @@ export {
   updateShiftAction,
 } from "./actions/day-dashboard";
 export type { DayCaptainRowInput, ShiftRowInput } from "./actions/day-dashboard";
-export { respondCaptainFeedbackAction, submitCaptainFeedbackAction } from "./actions/feedback";
-export { addIssueAction, resolveIssueAction, respondIssueAction } from "./actions/issues";
 export {
   deleteCaptainIpMappingAction,
   rerunCaptainIpInferenceAction,

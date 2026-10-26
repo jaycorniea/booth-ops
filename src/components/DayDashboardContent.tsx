@@ -325,7 +325,7 @@ export function DayDashboardContent({
               </li>
               <li>Clicker: 1 click = words exchanged — start and end readings at shift change</li>
               <li>No-show by T+15 min → call the coordinator</li>
-              <li>Supplies → portal issue or the coordinator</li>
+              <li>Supplies → the coordinator</li>
               <li>EOD: visitor count + shift status in portal</li>
             </ul>
           </div>

@@ -35,8 +35,6 @@ export type EventSettingsDerived = {
   eventDates: string[];
   dayCount: number;
   eveDate: string;
-  captainFeedbackCloseDate: string;
-  issueLogOpenDate: string;
 };
 
 export function eventSettingsFromConfig(config: BoothConfig = getBoothConfig()): EventSettings {
@@ -130,8 +128,6 @@ export function deriveEventSettings(
     eventDates,
     dayCount: eventDates.length,
     eveDate: addIsoDays(settings.openDate, -1),
-    captainFeedbackCloseDate: addIsoDays(settings.openDate, -7),
-    issueLogOpenDate: addIsoDays(settings.openDate, -2),
   };
 }
 

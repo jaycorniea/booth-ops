@@ -17,31 +17,6 @@ export interface Shift {
   notes: string;
 }
 
-export interface Issue {
-  id: number;
-  event_date: string;
-  shift: string;
-  category: string;
-  description: string;
-  resolved: number;
-  admin_response: string;
-  admin_response_at: string | null;
-  created_at: string;
-}
-
-export interface CaptainFeedback {
-  id: number;
-  name: string;
-  email: string;
-  event_date: string;
-  category: string;
-  portal_rating: number | null;
-  comments: string;
-  admin_response: string;
-  admin_response_at: string | null;
-  created_at: string;
-}
-
 export interface DayCaptainRow {
   event_date: string;
   captain_slot: CaptainSlot;

@@ -1,7 +1,6 @@
 import { Card } from "@/components/ui";
 import { getAuthRole } from "@/lib/auth";
 import { CAPTAIN_MORE_NAV_LABEL } from "@/lib/captain-nav";
-import { isCaptainFeedbackOpenForPortal, isIssueLogOpenForPortal } from "@/lib/portal-window-sim-server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -10,11 +9,6 @@ export default async function CaptainMorePage() {
   if (role !== "captain") {
     redirect("/");
   }
-
-  const [feedbackOpen, issuesOpen] = await Promise.all([
-    isCaptainFeedbackOpenForPortal(),
-    isIssueLogOpenForPortal(),
-  ]);
 
   return (
     <div className="space-y-6">
@@ -45,22 +39,6 @@ export default async function CaptainMorePage() {
             </Link>
             <span className="text-slate-500"> — read-only event readiness</span>
           </li>
-          {issuesOpen ? (
-            <li>
-              <Link href="/issues" className="font-medium text-blue-700 underline">
-                Issues
-              </Link>
-              <span className="text-slate-500"> — event-week incident log</span>
-            </li>
-          ) : null}
-          {feedbackOpen ? (
-            <li>
-              <Link href="/feedback" className="font-medium text-blue-700 underline">
-                Feedback
-              </Link>
-              <span className="text-slate-500"> — prep suggestions for the coordinator</span>
-            </li>
-          ) : null}
         </ul>
       </Card>
     </div>

@@ -6,8 +6,7 @@ import { NavTracker } from "@/components/NavTracker";
 import { PortalContactFooter } from "@/components/PortalContactFooter";
 import { getAuthRole, hasAdminShell, isAdmin } from "@/lib/auth";
 import { getCaptainMoreMenuItems, getViewerExtrasMenuItems } from "@/lib/captain-nav";
-import { getPortalAsOf, getPortalWindowSim } from "@/lib/portal-window-sim-server";
-import { isCaptainFeedbackOpen, isIssueLogOpen } from "@/lib/event-dates";
+import { getPortalWindowSim } from "@/lib/portal-window-sim-server";
 
 /** Portal header nav + main content shell (shared by authenticated routes). */
 export async function PortalChrome({ children }: { children: React.ReactNode }) {
@@ -16,15 +15,10 @@ export async function PortalChrome({ children }: { children: React.ReactNode }) 
 
   const admin = await isAdmin();
   const canSwitchRoles = await hasAdminShell();
-  const [portalWindowSim, portalAsOf] = await Promise.all([getPortalWindowSim(), getPortalAsOf()]);
-  const showIssues = isIssueLogOpen(portalAsOf);
-  const feedbackOpen = isCaptainFeedbackOpen(portalAsOf);
+  const portalWindowSim = await getPortalWindowSim();
   const captainMoreMenuItems =
     role === "captain"
-      ? getCaptainMoreMenuItems({
-          showFeedback: feedbackOpen,
-          showIssues,
-        })
+      ? getCaptainMoreMenuItems()
       : role === "viewer"
         ? getViewerExtrasMenuItems()
         : [];
@@ -37,7 +31,6 @@ export async function PortalChrome({ children }: { children: React.ReactNode }) 
       <Nav
         role={role}
         isAdmin={admin}
-        showIssues={showIssues}
         captainMoreMenuItems={captainMoreMenuItems}
         roleSwitcher={canSwitchRoles ? <AdminRoleSwitcher currentRole={role} /> : null}
         portalWindowSim={portalWindowSim}

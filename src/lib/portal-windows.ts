@@ -88,13 +88,3 @@ export function isEventLiveWindow(asOf = new Date()): boolean {
 export function isSignupVolunteersWindow(asOf = new Date()): boolean {
   return getPortalWindow(asOf) === "b";
 }
-
-export function isCaptainFeedbackWindow(asOf = new Date()): boolean {
-  const window = getPortalWindow(asOf);
-  return window === "a" || window === "b";
-}
-
-export function isIssueLogWindow(asOf = new Date()): boolean {
-  const window = getPortalWindow(asOf);
-  return window === "c" || window === "d";
-}

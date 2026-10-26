@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0
+
+- Remove captain feedback and the issue log
+- Profiles, the day sheet, the day log, fill KPIs, and shift and no-show alerts stay
+
 ## 0.2.0
 
 - Remove the interested pool, the on-call pool, and the public signup pages that only fed those pools

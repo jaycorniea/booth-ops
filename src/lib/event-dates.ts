@@ -18,28 +18,9 @@ export function getEventEveDate(): string {
   return addIsoDays(getEventOpen(), -1);
 }
 
-/** Last calendar day captains can submit pre-event portal feedback (7 days before opening). */
-export function getCaptainFeedbackCloseDate(): string {
-  return addIsoDays(getEventOpen(), -7);
-}
-
 /** First day slot-fill stoplights use the tight 99/95 band (week before opening). */
 export function getCoverageTightenDate(): string {
   return addIsoDays(getEventOpen(), -7);
-}
-
-import { isCaptainFeedbackWindow, isIssueLogWindow } from "./portal-windows";
-
-export function isCaptainFeedbackOpen(asOf = new Date()): boolean {
-  return isCaptainFeedbackWindow(asOf);
-}
-
-export function getIssueLogOpenDate(): string {
-  return addIsoDays(getEventOpen(), -2);
-}
-
-export function isIssueLogOpen(asOf = new Date()): boolean {
-  return isIssueLogWindow(asOf);
 }
 
 export type ShiftScheduleEntry = ShiftTemplate & { label: string };

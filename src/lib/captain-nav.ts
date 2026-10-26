@@ -34,25 +34,16 @@ export function isCaptainShiftSheetDayHref(href: string): boolean {
   return href.startsWith("/day/");
 }
 
-export function getCaptainMoreMenuItems(options: {
-  showFeedback: boolean;
-  showIssues?: boolean;
-}): CaptainNavMenuItem[] {
-  const items: CaptainNavMenuItem[] = [
+export function getCaptainMoreMenuItems(): CaptainNavMenuItem[] {
+  return [
     { href: "/day-log", label: "Day log" },
     { href: "/more/add-volunteer", label: "Add a volunteer" },
     { href: "/kpi", label: "KPIs" },
   ];
-  if (options.showIssues) items.push({ href: "/issues", label: "Issues" });
-  if (options.showFeedback) items.push({ href: "/feedback", label: "Feedback" });
-  return items;
 }
 
-export function getCaptainExtrasMenuItems(options: {
-  showFeedback: boolean;
-  showIssues?: boolean;
-}): CaptainNavMenuItem[] {
-  return getCaptainMoreMenuItems(options);
+export function getCaptainExtrasMenuItems(): CaptainNavMenuItem[] {
+  return getCaptainMoreMenuItems();
 }
 
 export function getViewerExtrasMenuItems(): CaptainNavMenuItem[] {

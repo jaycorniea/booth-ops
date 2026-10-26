@@ -358,14 +358,12 @@ function HomeIcon({ className }: { className?: string }) {
 export function Nav({
   role,
   isAdmin = false,
-  showIssues = false,
   captainMoreMenuItems = [],
   roleSwitcher = null,
   portalWindowSim = null,
 }: {
   role: AuthRole;
   isAdmin?: boolean;
-  showIssues?: boolean;
   captainMoreMenuItems?: readonly CaptainNavMenuItem[];
   roleSwitcher?: ReactNode;
   portalWindowSim?: PortalWindow | null;
@@ -395,7 +393,7 @@ export function Nav({
   const links =
     role === "captain"
       ? getCaptainNavLinks()
-      : getOpsNavLinks(role, showIssues);
+      : getOpsNavLinks(role);
   const compactHeader = role === "captain" || role === "volunteer";
   const portalTitle =
     role === "captain"

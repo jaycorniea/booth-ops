@@ -1,5 +1,5 @@
 import { getCaptainSlotsForDate, hasAllDayCaptainsAssigned } from "./day-captain-slots";
-import { listAllShifts, listDayCaptains, listIssues } from "./db";
+import { listAllShifts, listDayCaptains } from "./db";
 import {
   daysUntilEventOpen,
   getEventDates,
@@ -40,8 +40,6 @@ export interface DuringEventKpis {
   totalEventDays: number;
   noShows: number;
   checkIns: number;
-  issuesOpen: number;
-  issuesResolved: number;
 }
 
 function percent(filled: number, total: number): number {
@@ -125,14 +123,12 @@ export async function getDuringEventKpis(today = centralDateString()): Promise<D
   const eventDates = getEventDates();
   const elapsed = elapsedEventDates(today);
   const elapsedSet = new Set(elapsed);
-  const [issues, shiftRows] = await Promise.all([listIssues(), listAllShifts()]);
+  const shiftRows = await listAllShifts();
   const elapsedShifts = shiftRows.filter((shift) => elapsedSet.has(shift.event_date));
   return {
     elapsedDays: elapsed.length,
     totalEventDays: eventDates.length,
     noShows: elapsedShifts.filter((s) => s.no_show === 1).length,
     checkIns: elapsedShifts.filter((s) => s.checked_in === 1).length,
-    issuesOpen: issues.filter((i) => i.resolved === 0).length,
-    issuesResolved: issues.filter((i) => i.resolved === 1).length,
   };
 }

@@ -100,7 +100,7 @@ export default async function KpiPage() {
         <div>
           <h3 className="text-lg font-semibold text-slate-900">During the event</h3>
           <p className="text-sm text-slate-600">
-            Booth impact and day-of execution — visitors, roster attendance, and issues.
+            Booth impact and day-of execution — visitors and roster attendance.
             Populates as Day Captains submit EOD reports.
           </p>
         </div>

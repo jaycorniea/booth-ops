@@ -10,6 +10,6 @@ describe("portalContactFooterExcluded", () => {
     expect(portalContactFooterExcluded("/")).toBe(false);
     expect(portalContactFooterExcluded("/schedule")).toBe(false);
     expect(portalContactFooterExcluded("/day/2026-08-28")).toBe(false);
-    expect(portalContactFooterExcluded("/feedback")).toBe(false);
+    expect(portalContactFooterExcluded("/kpi")).toBe(false);
   });
 });

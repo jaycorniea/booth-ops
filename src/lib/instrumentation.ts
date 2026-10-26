@@ -31,7 +31,7 @@ function authRoleFromCookieHeader(cookieHeader: string | null): AuthRole | null 
  * - shift updates in the same session — no-show workflow
  * - export.* — admin activity spikes
  *
- * Do not log: passwords, full volunteer PII, issue body text (use ids/counts only).
+ * Do not log: passwords or full volunteer PII (use ids and counts only).
  */
 
 export async function logPortalEvent(params: {

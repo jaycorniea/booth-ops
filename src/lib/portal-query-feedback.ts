@@ -37,36 +37,6 @@ export const CAPTAIN_WINDOW_MESSAGES: Record<string, PortalQueryMessage> = {
   },
 };
 
-export const PORTAL_FEEDBACK_ERRORS: Record<string, PortalQueryMessage> = {
-  closed: {
-    tone: "error",
-    message: "Feedback is closed — submissions ended one week before the event.",
-  },
-  comments: {
-    tone: "error",
-    message: "Please enter your comments before submitting.",
-  },
-  save: {
-    tone: "error",
-    message: "Could not save feedback. Try again in a moment.",
-  },
-  notfound: {
-    tone: "error",
-    message: "That feedback entry was not found.",
-  },
-};
-
-export const PORTAL_ISSUE_ERRORS: Record<string, PortalQueryMessage> = {
-  closed: {
-    tone: "error",
-    message: "The issue log is not open yet — it unlocks two days before the event.",
-  },
-  notfound: {
-    tone: "error",
-    message: "That issue was not found.",
-  },
-};
-
 export const PORTAL_VOLUNTEERS_ERRORS: Record<string, PortalQueryMessage> = {};
 
 const DEFAULT_ERROR: PortalQueryMessage = {

@@ -113,11 +113,6 @@ export default async function FairYearPage({
         <dl className="grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
           <Derived label="Event days" value={`${derived.dayCount} (${formatEventDate(settings.openDate)} – ${formatEventDate(settings.closeDate)})`} />
           <Derived label="Event eve" value={formatEventDateLong(derived.eveDate)} />
-          <Derived
-            label="Captain feedback closes"
-            value={formatEventDateLong(derived.captainFeedbackCloseDate)}
-          />
-          <Derived label="Issue log opens" value={formatEventDateLong(derived.issueLogOpenDate)} />
           <Derived label="Window C starts" value={`9:00 pm Central on ${formatEventDateLong(derived.eveDate)}`} />
           <Derived
             label="Window D starts"

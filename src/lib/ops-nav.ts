@@ -49,7 +49,6 @@ const ADMIN_LINKS: OpsNavEntry[] = [
   { href: "/schedule", label: "Schedule" },
   { href: "/volunteers", label: "Profiles" },
   { href: "/kpi", label: "KPIs" },
-  { href: "/feedback", label: "Feedback" },
 ];
 
 const VOLUNTEER_NAV_LINKS: OpsNavEntry[] = [
@@ -62,18 +61,15 @@ function isOpsNavLink(entry: OpsNavEntry): entry is OpsNavLink {
   return !("kind" in entry);
 }
 
-export function getOpsNavLinks(role: AuthRole, showIssues: boolean): OpsNavEntry[] {
+export function getOpsNavLinks(role: AuthRole): OpsNavEntry[] {
   if (role === "viewer" || role === "volunteer") {
     return [...VOLUNTEER_NAV_LINKS];
   }
-  return [
-    ...ADMIN_LINKS,
-    ...(showIssues ? [{ href: "/issues", label: "Issues" } satisfies OpsNavLink] : []),
-  ];
+  return [...ADMIN_LINKS];
 }
 
-export function getOpsNavLinkLabels(role: AuthRole, showIssues: boolean): string[] {
-  return getOpsNavLinks(role, showIssues).map((entry) =>
+export function getOpsNavLinkLabels(role: AuthRole): string[] {
+  return getOpsNavLinks(role).map((entry) =>
     isOpsNavLink(entry) ? entry.label : entry.label
   );
 }
